@@ -11,6 +11,7 @@
         const relv = {{ relv|tojson }}
         console.log(kpData);
         console.log(data);
+        console.log(relv);
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;700&display=swap');
@@ -285,23 +286,23 @@
                     </div>
                 </div>
 
-                {% if data.files %}
+                {% if relv %}
                     <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-2xl text-amber-300">Most relevant</h3>
                         <span class="text-[10px] uppercase tracking-wider text-amber-300/70">Kulturpool</span>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                            {% for m in data.files %}
+                            {% for m in relv %}
                                 <figure class="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40">
-                                    <img src="{{ m.IIIFBasePath }}/full/full/0/default.jpg" alt="{{ m.title }}"
-                                         class="object-cover w-full h-64 md:h-72 transform group-hover:scale-105 transition duration-700">
+                                    <a href="{{ m.isShownAt }}" target="_blank"><img src="{{ m.previewImage }}"
+                                         class="object-cover w-full h-64 md:h-72 transform group-hover:scale-105 transition duration-700"></a>
                                     <figcaption
                                             class="absolute bottom-0 left-0 w-full bg-black/70 text-white text-sm p-3 opacity-0 group-hover:opacity-100 transition">
                                         {{ m.title }}
                                     </figcaption>
-                                    <div class="absolute top-3 left-3 text-[10px] px-2 py-0.5 rounded-full bg-sky-600/20 text-sky-200 border border-sky-700/50">
-                                        OpenAtlas
+                                    <div class="absolute top-3 left-3 text-[10px] px-2 py-0.5 rounded-full bg-amber-600/20 text-amber-200 border border-amber-700/50">
+                                        Kulturpool
                                     </div>
                                 </figure>
                             {% endfor %}
