@@ -41,7 +41,6 @@ def entity_view(id_: int):
     print(id_)
 
     data = get_thanados_data(id_)
-    print(data)
 
     description = ''
     if data['description']:
