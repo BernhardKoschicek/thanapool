@@ -20,6 +20,8 @@ def kulturpool_search(item):
         if 'creator' in obj:
             print(f"   von {obj['creator']}")
 
+    return data
+
 def description_text(description):
     match = re.search(r"##de_##(.*?)##_de##", description, re.DOTALL | re.IGNORECASE)
     if match:
@@ -45,15 +47,11 @@ def extract_keywords(openrouter_data):
 def kulturpool_main(description, openrouter_data):
     # get description and try query with description
     descrip = description_text(description)
-    result = kulturpool_search(descrip)
-    if result:
-        return result
+    result_descrip = kulturpool_search(descrip)
 
     # get keywords and try with all keywords
     keywords, keywords_all = extract_keywords(openrouter_data)
-    result = kulturpool_search(keywords_all)
-    if result:
-        return result
+    result_keyall = kulturpool_search(keywords_all)
+    print(type(result_descrip), type(result_keyall))
+    return result_descrip, result_keyall
 
-    #print("No results.")
-    return None

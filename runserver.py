@@ -81,7 +81,7 @@ def openrouter_view(id_: int):
     dates = data['when']
     types = [type_['title'] for type_ in data['types']]
     openrouter = openrouter_call(description)
-    kulturpool_result = kulturpool_main(description, openrouter)
+    kp_descrip_result, kp_keyall_result = kulturpool_main(description, openrouter)
     return render_template(
         "openrouter_view.html",
         external_references=external_references,
