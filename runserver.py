@@ -3,6 +3,7 @@ import requests
 
 from models.openrouter import openrouter_call
 from models.thanados_api import get_thanados_data
+#from models.kulturpool_api import kulturpool_search
 
 app = Flask(__name__)
 
@@ -44,6 +45,7 @@ def openrouter_view(id_: int):
     dates = data['when']
     types = [type_['title'] for type_ in data['types']]
     openrouter = openrouter_call(description)
+    #kulturpool = kulturpool_search(openrouter)
     return render_template(
         "openrouter_view.html",
         external_references=external_references,
