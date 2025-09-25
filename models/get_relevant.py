@@ -87,14 +87,16 @@ def api_call(text, data):
     )
     result = response.json()['choices'][0]['message']['content']
     keys_list = re.findall(r'"([0-9a-f]{24})"', result)
-    return keys_list
+    return set(keys_list)
 
 def get_relevant(name, description):
     data, info = get_all_info(name)
     relevant_examples = api_call(description, data)
+    print(set(relevant_examples))
     res_list = []
     for k in relevant_examples:
         d = {}
+        d['id'] = k
         d['title'] = info[k][0]
         d['previewImage'] = info[k][1]
         d['isShownAt'] = info[k][2]
