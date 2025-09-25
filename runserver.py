@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 
-from thanapool.models.openrouter import openrouter_call
+from models.openrouter import openrouter_call
 
 app = Flask(__name__)
 
