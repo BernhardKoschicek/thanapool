@@ -284,10 +284,30 @@
                     </div>
                 </div>
 
-                <div class="neon rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black p-6 md:p-8">
-                    <h3 class="text-3xl md:text-4xl mb-3 text-amber-300">Incoming Data</h3>
-                    <p class="text-zinc-400 mb-6">Most relevant hit</p>
-                </div>
+                {% if data.files %}
+                    <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-2xl text-amber-300">Most relevant</h3>
+                        <span class="text-[10px] uppercase tracking-wider text-amber-300/70">Kulturpool</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                            {% for m in data.files %}
+                                <figure class="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40">
+                                    <img src="{{ m.IIIFBasePath }}/full/full/0/default.jpg" alt="{{ m.title }}"
+                                         class="object-cover w-full h-64 md:h-72 transform group-hover:scale-105 transition duration-700">
+                                    <figcaption
+                                            class="absolute bottom-0 left-0 w-full bg-black/70 text-white text-sm p-3 opacity-0 group-hover:opacity-100 transition">
+                                        {{ m.title }}
+                                    </figcaption>
+                                    <div class="absolute top-3 left-3 text-[10px] px-2 py-0.5 rounded-full bg-sky-600/20 text-sky-200 border border-sky-700/50">
+                                        OpenAtlas
+                                    </div>
+                                </figure>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
 
                 <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
                     <div class="flex items-center justify-between mb-4">
