@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 
 from models.openrouter import openrouter_call
+from models.thanados_api import get_thanados_data
 
 app = Flask(__name__)
 
@@ -35,7 +36,7 @@ def entity_view(id_: int):
             {"title": "The Novara sails from Auckland to Tahiti", "url": "#"}
         ]
     }
-    return render_template("entity_view.html", data=data)
+    return render_template("entity_view.html", data=get_thanados_data(id_))
 
 if __name__ == "__main__":
     app.run(debug=True)

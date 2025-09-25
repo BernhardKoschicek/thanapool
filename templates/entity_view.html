@@ -19,7 +19,7 @@
             {{ data.title }}
         </h1>
         <p class="text-xl text-amber-400">
-            {{ data.start_date }} <span class="mx-2 text-gray-500">⇄</span> {{ data.end_date }}
+            {{ data.when.start.earliest }} <span class="mx-2 text-gray-500">⇄</span> {{ data.when.start.latest or data.when.start.earliest }}
         </p>
     </header>
 
@@ -27,7 +27,7 @@
     <section class="relative mb-16 max-w-4xl mx-auto">
         <div class="bg-zinc-900 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition">
             <div class="prose prose-invert max-w-none text-lg leading-relaxed">
-                {{ data.description.en }}
+                {{ data.description }}
             </div>
         </div>
     </section>
@@ -48,13 +48,13 @@
     {% endif %}
 
     <!-- Images -->
-    {% if data.media %}
+    {% if data.files %}
     <section class="mb-16 max-w-6xl mx-auto">
         <h2 class="text-4xl text-center mb-8 text-amber-400">Gallery</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {% for m in data.media %}
+            {% for m in data.files %}
             <figure class="group relative overflow-hidden rounded-2xl shadow-lg">
-                <img src="{{ m.url }}" alt="{{ m.title }}" class="object-cover w-full h-72 transform group-hover:scale-105 transition duration-700">
+                <img src="{{ m.IIIFBasePath }}" alt="{{ m.title }}" class="object-cover w-full h-72 transform group-hover:scale-105 transition duration-700">
                 <figcaption class="absolute bottom-0 left-0 w-full bg-black/70 text-white text-sm p-3 opacity-0 group-hover:opacity-100 transition">
                     {{ m.title }}
                 </figcaption>
