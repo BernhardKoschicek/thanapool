@@ -49,6 +49,8 @@ def description_text(description):
     match = re.search(r"##de_##(.*?)##_de##", description, re.DOTALL | re.IGNORECASE)
     if match:
         return match.group(1).strip()
+    else:
+        return description
 
 def kulturpool_search_extended(openrouter_data):
     """Function to loop through all categories provided in the dictionary from openrouter."""
