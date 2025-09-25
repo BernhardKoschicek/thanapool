@@ -17,7 +17,10 @@ def kulturpool_search(name):
         data = get_data_of_page(name, i)
         for hit in data['hits']:
             doc = hit['document']
-            info_dict[doc['id']] = [doc['title'][0], doc['previewImage'], doc['isShownAt']]
+            if 'previewImage' in doc.keys():
+                info_dict[doc['id']] = [doc['title'][0], doc['previewImage'], doc['isShownAt']]
+            else:
+                info_dict[doc['id']] = [doc['title'][0], '', doc['isShownAt']]
     res_list = []
     for k in info_dict.keys():
         d = {}
