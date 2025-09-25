@@ -5,14 +5,21 @@ from models.thanados_api import get_thanados_data
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/<id_>")
 def entity_view(id_: int):
-    print(id_)
+    data = get_thanados_data(id_)
 
+    return render_template("entity_view.html", data=data)
+
+
+@app.route("/openrouter/<id_>")
+def openrouter_view(id_: int):
     data = get_thanados_data(id_)
 
     external_references = data['externalReferenceSystems']
@@ -20,8 +27,15 @@ def entity_view(id_: int):
     title = data['title']
     dates = data['when']
     types = data['types']
-    openrouter=openrouter_call()
-    return render_template("entity_view.html", data=data)
+    #openrouter = openrouter_call()
+    return render_template(
+        "openrouter_view.html",
+        external_references=external_references,
+        description=description,
+        title=title,
+        dates=dates,
+        types=types)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
