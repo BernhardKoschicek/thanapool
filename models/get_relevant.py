@@ -92,7 +92,6 @@ def api_call(text, data):
 def get_relevant(name, description):
     data, info = get_all_info(name)
     relevant_examples = api_call(description, data)
-    print(set(relevant_examples))
     res_list = []
     for k in relevant_examples:
         d = {}
