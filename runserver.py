@@ -20,10 +20,8 @@ def entity_view(id_: int):
     data = get_thanados_data(id_)
     name = data['title']
     main_type = ''
-    if data['types']:
-        main_type = data['types'][0]
-    if main_type and main_type['isStandard']:
-        main_type = main_type['title']
+    if data['types'] and data['types'][0]['isStandard']:
+        main_type = data['types'][0]['title']
 
 
     base_url = "https://api.kulturpool.at/search"
