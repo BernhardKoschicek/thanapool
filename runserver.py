@@ -8,8 +8,9 @@ app = Flask(__name__)
 def index():
     return render_template("index.html", openrouter=openrouter_call())
 
-@app.route("/<id_: int>")
+@app.route("/<id_>")
 def entity_view(id_: int):
+    print(id_)
     data = {
         "id": 196314,
         "title": "The Novara sails from Sydney to Auckland",
