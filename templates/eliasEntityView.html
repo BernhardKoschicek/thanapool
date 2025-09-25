@@ -1,0 +1,182 @@
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>OpenAtlas + Kulturpool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { font-family: system-ui, Arial, sans-serif; }
+  body { margin: 0; padding: 16px; background: #fafafa; color: #111; }
+  .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .panel { background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:12px; }
+  .img { width:100%; height:auto; border-radius:8px; border:1px solid #eee; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:10px; }
+  .card { border:1px solid #eee; border-radius:8px; padding:8px; background:#fff; }
+  .thumb { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f0f0f0; }
+  .muted { color:#666; font-size:12px; }
+  .error { color:#b00020; white-space:pre-wrap; }
+  a { color:#0b57d0; text-decoration:none; } a:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+<h1 style="margin:0 0 12px">Entity depiction + Kulturpool search</h1>
+
+<div class="wrap">
+  <section class="panel">
+    <h2 style="margin:0 0 8px">Entity</h2>
+    <div id="eLoad" class="muted">Loading…</div>
+    <div id="entity"></div>
+    <div id="eErr" class="error"></div>
+  </section>
+
+  <section class="panel">
+    <h2 style="margin:0 0 8px">Kulturpool</h2>
+    <div id="kLoad" class="muted">Waiting for entity name…</div>
+    <div id="kp" class="grid"></div>
+    <div id="kErr" class="error"></div>
+  </section>
+</div>
+
+<script>
+(async () => {
+  const ENTITY_ID = 196078;
+  const OA = 'https://thanados.openatlas.eu/api/0.4';
+  const KP = 'https://api.kulturpool.at/search';
+
+  // Two proxy fallbacks
+  const PROXIES = [
+    (u) => 'https://cors.isomorphic-git.org/' + u,
+    (u) => 'https://corsproxy.io/?' + encodeURIComponent(u),
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const eBox = $('entity'), eLoad = $('eLoad'), eErr = $('eErr');
+  const kBox = $('kp'), kLoad = $('kLoad'), kErr = $('kErr');
+
+  const esc = s => String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+
+  const iiifImg = (base, size=800) => base.replace(/\/$/, '') + `/full/${size},/0/default.jpg`;
+
+  async function fetchJSONWithProxies(url) {
+    // try direct
+    try {
+      const r = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+      return await r.json();
+    } catch (e) {
+      // try proxies
+      for (const wrap of PROXIES) {
+        try {
+          const r = await fetch(wrap(url), { headers: { Accept: 'application/json' } });
+          if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+          return await r.json();
+        } catch (_) { /* try next */ }
+      }
+      throw e;
+    }
+  }
+
+  async function fetchEntity() {
+    const url = `${OA}/entity/${ENTITY_ID}`;
+    const r = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!r.ok) throw new Error(`OpenAtlas ${r.status} ${r.statusText}`);
+    return r.json();
+  }
+
+  function renderEntity(fcLike) {
+    const feat = fcLike?.features?.[0] || fcLike;
+    const title = feat?.properties?.title || `Entity ${ENTITY_ID}`;
+    const dep0 = Array.isArray(feat?.depictions) ? feat.depictions[0] : null;
+    const iiifBase = dep0?.IIIFBasePath;
+    const imgUrl = iiifBase ? iiifImg(iiifBase) : null;
+
+    eBox.innerHTML = `
+      <div><strong>${esc(title)}</strong></div>
+      ${imgUrl ? `<img class="img" src="${imgUrl}" alt="${esc(title)}">`
+               : `<div class="muted">No depiction found.</div>`}
+    `;
+    eLoad.textContent = '';
+    // Use “Novara” if present in title, else first word
+    const q = /novara/i.test(title) ? 'Novara' : (title.split(/\s+/)[0] || 'Novara');
+    return q;
+  }
+
+  function pickThumb(doc) {
+    // Some fields can be arrays. Normalize to string.
+    const firstStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string') : (typeof v === 'string' ? v : null);
+    return (
+      firstStr(doc.edmPreview) ||
+      firstStr(doc.thumbnail) ||
+      firstStr(doc.preview) ||
+      firstStr(doc.image) ||
+      (Array.isArray(doc.identifier) ? doc.identifier.find(x => typeof x === 'string' && /\.(jpg|jpeg|png|webp)$/i.test(x)) : null)
+    );
+  }
+
+  function pickLink(doc) {
+    const firstStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string') : (typeof v === 'string' ? v : null);
+    return (
+      firstStr(doc.link) ||
+      firstStr(doc.isShownAt) ||
+      (Array.isArray(doc.identifier) ? doc.identifier.find(x => typeof x === 'string' && /^https?:\/\//.test(x)) : null)
+    );
+  }
+
+  async function searchKulturpool(q) {
+    const u = new URL(KP);
+    u.searchParams.set('q', q);
+    u.searchParams.set('per_page', '12');
+    // You can bias to images:
+    // u.searchParams.set('filter_by','edmType:=IMAGE');
+    return fetchJSONWithProxies(u.toString());
+  }
+
+  function renderKulturpool(resp) {
+    const hits = Array.isArray(resp?.hits)
+      ? resp.hits
+      : Array.isArray(resp?.results?.[0]?.hits)
+        ? resp.results[0].hits
+        : [];
+
+    kLoad.textContent = '';
+    if (!hits.length) { kBox.innerHTML = `<div class="muted">No results.</div>`; return; }
+
+    kBox.innerHTML = hits.map(h => {
+      const doc = h.document || {};
+      const title = doc.title || doc.alternative || '(untitled)';
+      const provider = doc.dataProvider || doc.publisher || '';
+      const link = pickLink(doc);
+      const thumb = pickThumb(doc);
+
+      return `
+        <article class="card">
+          ${thumb ? `<img class="thumb" src="${esc(thumb)}" alt="">` : `<div class="thumb"></div>`}
+          <div style="margin-top:6px;">
+            ${link ? `<a target="_blank" rel="noopener" href="${esc(link)}">${esc(title)}</a>` : `<div>${esc(title)}</div>`}
+            ${provider ? `<div class="muted">${esc(provider)}</div>` : ``}
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  try {
+    const entity = await fetchEntity();
+    const q = renderEntity(entity);
+    kLoad.textContent = `Searching Kulturpool for “${q}”…`;
+    const kp = await searchKulturpool(q);
+    renderKulturpool(kp);
+  } catch (err) {
+    eLoad.textContent = ''; kLoad.textContent = '';
+    const m = err?.message || String(err);
+    if (/OpenAtlas/.test(m)) eErr.textContent = m;
+    else if (/Kulturpool/.test(m)) kErr.textContent = m;
+    else kErr.textContent = m;
+    console.error(err);
+  }
+})();
+</script>
+</body>
+</html>
