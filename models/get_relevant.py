@@ -92,4 +92,11 @@ def api_call(text, data):
 def get_relevant(name, description):
     data, info = get_all_info(name)
     relevant_examples = api_call(description, data)
-    return {k: info[k] for k in relevant_examples if k in info}
+    res_list = []
+    for k in relevant_examples:
+        d = {}
+        d['title'] = info[k][0]
+        d['previewImage'] = info[k][1]
+        d['isShownAt'] = info[k][2]
+        res_list.append(d)
+    return res_list
