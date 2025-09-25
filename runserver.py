@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("index.html", openrouter=openrouter_call())
+    return render_template("index.html")
 
 @app.route("/<id_>")
 def entity_view(id_: int):
@@ -20,7 +20,7 @@ def entity_view(id_: int):
     title = data['title']
     dates = data['when']
     types = data['types']
-
+    openrouter=openrouter_call()
     return render_template("entity_view.html", data=data)
 
 if __name__ == "__main__":
