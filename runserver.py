@@ -26,8 +26,8 @@ def openrouter_view(id_: int):
     description = data['description']
     title = data['title']
     dates = data['when']
-    types = data['types']
-    #openrouter = openrouter_call()
+    types = [type_['title'] for type_ in data['types']]
+    openrouter = openrouter_call()
     return render_template(
         "openrouter_view.html",
         external_references=external_references,
