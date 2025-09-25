@@ -1,12 +1,18 @@
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>OpenAtlas + Kulturpool</title>
+<title>OpenAtlas × Kulturpool</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root { font-family: system-ui, Arial, sans-serif; }
   body { margin: 0; padding: 16px; background: #fafafa; color: #111; }
-  .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  h1 { margin: 0 0 12px; font-size: 18px; }
+  .bar { display:flex; gap:8px; align-items:center; margin: 8px 0 16px; }
+  input[type="number"], input[type="text"] { padding:8px 10px; border:1px solid #ddd; border-radius:8px; width: 200px; }
+  button { padding:8px 12px; border:1px solid #ddd; border-radius:8px; background:#fff; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:not-allowed; }
+  .wrap { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
   .panel { background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:12px; }
   .img { width:100%; height:auto; border-radius:8px; border:1px solid #eee; }
   .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:10px; }
@@ -14,237 +20,214 @@
   .thumb { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f0f0f0; }
   .muted { color:#666; font-size:12px; }
   .error { color:#b00020; white-space:pre-wrap; }
-  a { color:#0b57d0; text-decoration:none; } a:hover{ text-decoration:underline; }
   .dep-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
-.dep-card { border:1px solid #eee; border-radius:8px; padding:6px; background:#fff; }
-.dep-img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f0f0f0; }
-.cap { font-size:12px; color:#666; margin-top:4px; }
-.kv { margin:6px 0; font-size:14px; }
-.kv b { font-weight:600; }
-
+  .dep-card { border:1px solid #eee; border-radius:8px; padding:6px; background:#fff; }
+  .dep-img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f0f0f0; }
+  .cap { font-size:12px; color:#666; margin-top:4px; }
+  .kv { margin:6px 0; font-size:14px; }
+  .kv b { font-weight:600; }
 </style>
 </head>
 <body>
-<h1 style="margin:0 0 12px">OpenAtlas x Kulturpool</h1>
+  <h1>OpenAtlas × Kulturpool</h1>
 
-<div class="wrap">
-  <section class="panel">
-    <h2 style="margin:0 0 8px">OpenAtlas Entity</h2>
-    <div id="eLoad" class="muted">Loading…</div>
-    <div id="entity"></div>
-    <div id="eErr" class="error"></div>
-  </section>
+  <div class="bar">
+    <label for="entId">Entity ID:</label>
+    <input id="entId" type="number" value="196078" min="1" />
+    <button id="loadBtn">Load</button>
+    <span class="muted">Example: 196078</span>
+  </div>
 
-  <section class="panel">
-    <h2 style="margin:0 0 8px">Kulturpool Matches</h2>
-    <div id="kLoad" class="muted">Waiting for entity name…</div>
-    <div id="kp" class="grid"></div>
-    <div id="kErr" class="error"></div>
-  </section>
-</div>
+  <div class="wrap">
+    <section class="panel">
+      <h2 style="margin:0 0 8px">OpenAtlas Entity</h2>
+      <div id="eLoad" class="muted">Enter an ID and press Load.</div>
+      <div id="entity"></div>
+      <div id="eErr" class="error"></div>
+    </section>
+
+    <section class="panel">
+      <h2 style="margin:0 0 8px">Kulturpool Matches</h2>
+      <div id="kLoad" class="muted">Waiting…</div>
+      <div id="kp" class="grid"></div>
+      <div id="kErr" class="error"></div>
+    </section>
+  </div>
 
 <script>
-(async () => {
-  const ENTITY_ID = 50505;
+(() => {
   const OA = 'https://thanados.openatlas.eu/api/0.4';
   const KP = 'https://api.kulturpool.at/search';
 
-  // Two proxy fallbacks
   const PROXIES = [
     (u) => 'https://cors.isomorphic-git.org/' + u,
     (u) => 'https://corsproxy.io/?' + encodeURIComponent(u),
   ];
 
   const $ = (id) => document.getElementById(id);
+  const entIdInput = $('entId');
+  const loadBtn = $('loadBtn');
   const eBox = $('entity'), eLoad = $('eLoad'), eErr = $('eErr');
   const kBox = $('kp'), kLoad = $('kLoad'), kErr = $('kErr');
 
-  const esc = s => String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-    .replace(/'/g,'&#039;');
-
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   const iiifImg = (base, size=800) => base.replace(/\/$/, '') + `/full/${size},/0/default.jpg`;
+  const arrStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string' && x) : (typeof v === 'string' ? v : null);
 
   async function fetchJSONWithProxies(url) {
-    // try direct
     try {
       const r = await fetch(url, { headers: { Accept: 'application/json' } });
       if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
       return await r.json();
     } catch (e) {
-      // try proxies
       for (const wrap of PROXIES) {
         try {
           const r = await fetch(wrap(url), { headers: { Accept: 'application/json' } });
           if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
           return await r.json();
-        } catch (_) { /* try next */ }
+        } catch (_) {}
       }
       throw e;
     }
   }
 
-  async function fetchEntity() {
-    const url = `${OA}/entity/${ENTITY_ID}`;
+  async function fetchEntity(entityId) {
+    const url = `${OA}/entity/${entityId}`;
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!r.ok) throw new Error(`OpenAtlas ${r.status} ${r.statusText}`);
     return r.json();
   }
 
-  function renderEntity(fcLike) {
-  const feat = fcLike?.features?.[0] || fcLike;
+  function renderEntity(fcLike, entityId) {
+    const feat = fcLike?.features?.[0] || fcLike;
 
-  // Basics
-  const title = feat?.properties?.title || `Entity ${ENTITY_ID}`;
-  const crmClass = feat?.crmClass || '';
-  const systemClass = feat?.systemClass || '';
-  const types = Array.isArray(feat?.types) ? feat.types.map(t => t?.label || t?.name).filter(Boolean) : [];
-  const ts = feat?.when?.timespans?.[0] || {};
-  const from = ts?.start || ts?.begin_of_the_begin || ts?.earliest || '';
-  const to   = ts?.end   || ts?.end_of_the_end   || ts?.latest   || '';
+    const title = feat?.properties?.title || `Entity ${entityId}`;
+    const crmClass = feat?.crmClass || '';
+    const systemClass = feat?.systemClass || '';
+    const types = Array.isArray(feat?.types) ? feat.types.map(t => t?.label || t?.name).filter(Boolean) : [];
+    const ts = feat?.when?.timespans?.[0] || {};
+    const from = ts?.start || ts?.begin_of_the_begin || ts?.earliest || '';
+    const to   = ts?.end   || ts?.end_of_the_end   || ts?.latest   || '';
 
-  // Depictions
-  const deps = Array.isArray(feat?.depictions) ? feat.depictions : [];
-  const main = deps[0];
-  const mainIIIF = main?.IIIFBasePath ? iiifImg(main.IIIFBasePath) : null;
+    const deps = Array.isArray(feat?.depictions) ? feat.depictions : [];
+    const main = deps[0];
+    const mainIIIF = main?.IIIFBasePath ? iiifImg(main.IIIFBasePath) : null;
 
-  const infoRows = [
-    crmClass ? `<div class="kv"><b>CRM class:</b> ${esc(crmClass)}</div>` : '',
-    systemClass ? `<div class="kv"><b>System class:</b> ${esc(systemClass)}</div>` : '',
-    types.length ? `<div class="kv"><b>Types:</b> ${esc(types.join(', '))}</div>` : '',
-    (from || to) ? `<div class="kv"><b>When:</b> ${esc([from,to].filter(Boolean).join(' – '))}</div>` : ''
-  ].join('');
+    const infoRows = [
+      crmClass ? `<div class="kv"><b>CRM class:</b> ${esc(crmClass)}</div>` : '',
+      systemClass ? `<div class="kv"><b>System class:</b> ${esc(systemClass)}</div>` : '',
+      types.length ? `<div class="kv"><b>Types:</b> ${esc(types.join(', '))}</div>` : '',
+      (from || to) ? `<div class="kv"><b>When:</b> ${esc([from,to].filter(Boolean).join(' – '))}</div>` : ''
+    ].join('');
 
-  const grid = deps.slice(0, 6).map(d => {
-    const img = d?.IIIFBasePath ? iiifImg(d.IIIFBasePath, 400) : null;
-    const cap = d?.title || '';
-    const link = d?.url || d?.IIIFManifest || '#';
-    return `
-      <article class="dep-card">
-        ${img ? `<a href="${esc(link)}" target="_blank" rel="noopener">
-                    <img class="dep-img" src="${esc(img)}" alt="${esc(cap)}" referrerpolicy="no-referrer">
-                 </a>`
-              : `<div class="dep-img"></div>`}
-        ${cap ? `<div class="cap">${esc(cap)}</div>` : ``}
-      </article>
+    const grid = deps.slice(0, 6).map(d => {
+      const img = d?.IIIFBasePath ? iiifImg(d.IIIFBasePath, 400) : null;
+      const cap = d?.title || '';
+      const link = d?.url || d?.IIIFManifest || '#';
+      return `
+        <article class="dep-card">
+          ${img ? `<a href="${esc(link)}" target="_blank" rel="noopener">
+                      <img class="dep-img" src="${esc(img)}" alt="${esc(cap)}" referrerpolicy="no-referrer">
+                   </a>` : `<div class="dep-img"></div>`}
+          ${cap ? `<div class="cap">${esc(cap)}</div>` : ``}
+        </article>
+      `;
+    }).join('');
+
+    eBox.innerHTML = `
+      <div style="display:grid; gap:10px;">
+        <div><strong>${esc(title)}</strong></div>
+        ${mainIIIF ? `<img class="img" src="${esc(mainIIIF)}" alt="${esc(title)}" referrerpolicy="no-referrer">`
+                    : `<div class="muted">No depiction found.</div>`}
+        ${infoRows}
+        ${deps.length ? `<div class="dep-grid">${grid}</div>` : ``}
+      </div>
     `;
-  }).join('');
+    eLoad.textContent = '';
 
-  eBox.innerHTML = `
-    <div style="display:grid; gap:10px;">
-      <div><strong>${esc(title)}</strong></div>
-      ${mainIIIF ? `<img class="img" src="${esc(mainIIIF)}" alt="${esc(title)}" referrerpolicy="no-referrer">`
-                  : `<div class="muted">No depiction found.</div>`}
-      ${infoRows}
-      ${deps.length ? `<div class="dep-grid">${grid}</div>` : ``}
-    </div>
-  `;
-  eLoad.textContent = '';
-
-  // Keep your search query logic
-  return /novara/i.test(title) ? 'Novara' : (title.split(/\s+/)[0] || 'Novara');
-}
-
-
-  function pickThumb(doc) {
-  const firstStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string' && x) : (typeof v === 'string' ? v : null);
-  // Per docs: previewImage → object → isShownBy
-  return (
-    firstStr(doc.previewImage) ||
-    firstStr(doc.object) ||
-    firstStr(doc.isShownBy) ||
-    null
-  );
-}
-
-
-
-  function pickLink(doc) {
-    const firstStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string') : (typeof v === 'string' ? v : null);
-    return (
-      firstStr(doc.link) ||
-      firstStr(doc.isShownAt) ||
-      (Array.isArray(doc.identifier) ? doc.identifier.find(x => typeof x === 'string' && /^https?:\/\//.test(x)) : null)
-    );
+    // Query for Kulturpool: prefer “Novara” if present, else first word
+    return /novara/i.test(title) ? 'Novara' : (title.split(/\s+/)[0] || 'Novara');
   }
 
   async function searchKulturpool(q) {
-  const u = new URL(KP);
-  u.searchParams.set('q', q);
-  u.searchParams.set('per_page', '12');
-  u.searchParams.set('filter_by', 'edmType:=IMAGE'); // only items with images
-  // u.searchParams.set('use_cache', 'true'); // optional
-  return fetchJSONWithProxies(u.toString());
-}
-
+    const u = new URL(KP);
+    u.searchParams.set('q', q);
+    u.searchParams.set('per_page', '12');
+    u.searchParams.set('filter_by', 'edmType:=IMAGE');
+    return fetchJSONWithProxies(u.toString());
+  }
 
   function renderKulturpool(resp) {
-  // Extract hits from Typesense-style response
-  const hits = Array.isArray(resp?.hits)
-    ? resp.hits
-    : Array.isArray(resp?.results?.[0]?.hits)
-      ? resp.results[0].hits
-      : [];
+    const hits = Array.isArray(resp?.hits) ? resp.hits
+               : Array.isArray(resp?.results?.[0]?.hits) ? resp.results[0].hits
+               : [];
 
-  kLoad.textContent = '';
-  if (!hits.length) {
-    kBox.innerHTML = `<div class="muted">No results.</div>`;
-    return;
+    kLoad.textContent = '';
+    if (!hits.length) { kBox.innerHTML = `<div class="muted">No results.</div>`; return; }
+
+    const pickThumb = (doc) =>
+      arrStr(doc.previewImage) || arrStr(doc.object) || arrStr(doc.isShownBy) || null;
+
+    const pickLink = (doc) =>
+      arrStr(doc.isShownAt) || arrStr(doc.isShownBy) || arrStr(doc.object) || null;
+
+    kBox.innerHTML = hits.map(h => {
+      const doc = h.document || {};
+      const title = arrStr(doc.title) || arrStr(doc.alternative) || '(untitled)';
+      const provider = arrStr(doc.dataProvider) || arrStr(doc.publisher) || '';
+      const link = pickLink(doc);
+      const thumb = pickThumb(doc);
+
+      return `
+        <article class="card">
+          ${thumb
+            ? `<img class="thumb" src="${esc(thumb)}" alt="${esc(title)}" referrerpolicy="no-referrer"
+                   onerror="this.onerror=null; this.style.display='none';">`
+            : `<div class="thumb"></div>`}
+          <div style="margin-top:6px;">
+            ${link ? `<a target="_blank" rel="noopener" href="${esc(link)}">${esc(title)}</a>` : `<div>${esc(title)}</div>`}
+            ${provider ? `<div class="muted">${esc(provider)}</div>` : ``}
+          </div>
+        </article>
+      `;
+    }).join('');
   }
 
-  // Helpers: normalize array-or-string fields
-  const arrStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string' && x) : (typeof v === 'string' ? v : null);
+  async function loadById(entityId) {
+    eErr.textContent = ''; kErr.textContent = '';
+    eBox.innerHTML = ''; kBox.innerHTML = '';
+    eLoad.textContent = 'Loading…'; kLoad.textContent = 'Waiting…';
+    loadBtn.disabled = true;
 
-  const pickThumb = (doc) =>
-    arrStr(doc.previewImage) ||    // documented preview
-    arrStr(doc.object) ||          // medium-sized image
-    arrStr(doc.isShownBy) ||       // full image
-    null;
-
-  const pickLink = (doc) =>
-    arrStr(doc.isShownAt) ||       // institution detail page
-    arrStr(doc.isShownBy) ||       // direct image if no page
-    arrStr(doc.object) ||          // medium image
-    null;
-
-  kBox.innerHTML = hits.map(h => {
-    const doc = h.document || {};
-    const title = arrStr(doc.title) || arrStr(doc.alternative) || '(untitled)';
-    const provider = arrStr(doc.dataProvider) || arrStr(doc.publisher) || '';
-    const link = pickLink(doc);
-    const thumb = pickThumb(doc);
-
-    return `
-      <article class="card">
-        ${thumb
-          ? `<img class="thumb" src="${esc(thumb)}" alt="${esc(title)}" referrerpolicy="no-referrer"
-                 onerror="this.onerror=null; this.style.display='none';">`
-          : `<div class="thumb"></div>`}
-        <div style="margin-top:6px;">
-          ${link ? `<a target="_blank" rel="noopener" href="${esc(link)}">${esc(title)}</a>` : `<div>${esc(title)}</div>`}
-          ${provider ? `<div class="muted">${esc(provider)}</div>` : ``}
-        </div>
-      </article>
-    `;
-  }).join('');
-}
-
-
-  try {
-    const entity = await fetchEntity();
-    const q = renderEntity(entity);
-    kLoad.textContent = `Searching Kulturpool for “${q}”…`;
-    const kp = await searchKulturpool(q);
-    renderKulturpool(kp);
-  } catch (err) {
-    eLoad.textContent = ''; kLoad.textContent = '';
-    const m = err?.message || String(err);
-    if (/OpenAtlas/.test(m)) eErr.textContent = m;
-    else if (/Kulturpool/.test(m)) kErr.textContent = m;
-    else kErr.textContent = m;
-    console.error(err);
+    try {
+      const entity = await fetchEntity(entityId);
+      const q = renderEntity(entity, entityId);
+      kLoad.textContent = `Searching Kulturpool for “${q}”…`;
+      const kp = await searchKulturpool(q);
+      renderKulturpool(kp);
+    } catch (err) {
+      eLoad.textContent = ''; kLoad.textContent = '';
+      const m = err?.message || String(err);
+      if (/OpenAtlas/.test(m)) eErr.textContent = m; else kErr.textContent = m;
+      console.error(err);
+    } finally {
+      loadBtn.disabled = false;
+    }
   }
+
+  // UI events
+  loadBtn.addEventListener('click', () => {
+    const id = entIdInput.value.trim();
+    if (!id) return;
+    loadById(id);
+  });
+  entIdInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') loadBtn.click();
+  });
+
+  // Auto-load initial value
+  loadById(entIdInput.value.trim());
 })();
 </script>
 </body>
