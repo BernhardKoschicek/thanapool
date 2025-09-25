@@ -1,10 +1,13 @@
 from flask import Flask, render_template
 
+from thanapool.models.openrouter import openrouter_call
+
 app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    print(openrouter_call())
+    return render_template("index.html", openrouter=openrouter_call())
 
 if __name__ == "__main__":
     app.run(debug=True)
