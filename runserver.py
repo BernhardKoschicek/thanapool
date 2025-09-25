@@ -4,6 +4,7 @@ import requests
 from models.openrouter import openrouter_call
 from models.thanados_api import get_thanados_data
 from models.kulturpool_api import kulturpool_main
+from models.get_relevant import  get_relevant
 
 app = Flask(__name__)
 
@@ -82,6 +83,9 @@ def openrouter_view(id_: int):
     types = [type_['title'] for type_ in data['types']]
     openrouter = openrouter_call(description)
     kp_descrip_result, kp_keyall_result = kulturpool_main(description, openrouter)
+    relv = get_relevant(title, description)
+    print(relv)
+
     return render_template(
         "openrouter_view.html",
         external_references=external_references,
