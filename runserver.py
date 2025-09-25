@@ -73,8 +73,10 @@ def entity_view(id_: int):
         kp_data = {"found": 0, "hits": []}
 
     relv = get_relevant(name, description)
+    openrouter = openrouter_call(description)
+    kp_descrip_result, kp_keyall_result, kp_title_result, kp_keyspec_result = kulturpool_main(description, openrouter, name)
 
-    return render_template("entity_view.html", data=data, kp_data=kp_data, relv=relv)
+    return render_template("entity_view.html", data=data, kp_data=kp_data, relv=relv, titledata=kp_title_result)
 
 @app.route("/openrouter/<id_>")
 def openrouter_view(id_: int):
