@@ -42,8 +42,11 @@ def entity_view(id_: int):
 
     data = get_thanados_data(id_)
     print(data)
+
+    description = ''
     if data['description']:
-        data["description"] = extract_localized_text(data['description'])
+        description = extract_localized_text(data['description'])
+
 
     name = data['title']
     main_type = ''
@@ -70,7 +73,9 @@ def entity_view(id_: int):
         print(f"Fehler bei API-Request: {e}")
         kp_data = {"found": 0, "hits": []}
 
-    return render_template("entity_view.html", data=data, kp_data=kp_data)
+    relv = get_relevant(name, description)
+
+    return render_template("entity_view.html", data=data, kp_data=kp_data, relv=relv)
 
 @app.route("/openrouter/<id_>")
 def openrouter_view(id_: int):
