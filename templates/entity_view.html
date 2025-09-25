@@ -13,164 +13,237 @@
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;700&display=swap');
-    h1, h2 { font-family: 'Anton', sans-serif; letter-spacing: -1px; }
-    body { font-family: 'Space Grotesk', sans-serif; }
+    h1,h2,h3,h4{font-family:'Anton',sans-serif;letter-spacing:-.5px}
+    body{font-family:'Space Grotesk',sans-serif}
+
+    /* Ambient glow orbs */
+    .orb{position:absolute;border-radius:9999px;filter:blur(90px);opacity:.12;mix-blend:screen;pointer-events:none}
+    .orb.a{background:linear-gradient(135deg,#22d3ee,#6366f1);animation:floatA 22s ease-in-out infinite}
+    .orb.b{background:linear-gradient(135deg,#f59e0b,#ef4444);animation:floatB 26s ease-in-out infinite}
+    .orb.c{background:linear-gradient(135deg,#10b981,#22d3ee);animation:floatC 30s ease-in-out infinite}
+    @keyframes floatA{0%,100%{transform:translate(-6%,0)}50%{transform:translate(8%,6%)}}
+    @keyframes floatB{0%,100%{transform:translate(8%,-6%)}50%{transform:translate(-4%,6%)}}
+    @keyframes floatC{0%,100%{transform:translate(0,8%)}50%{transform:translate(4%,-8%)}}
+
+    /* Neon outline */
+    .neon{position:relative}
+    .neon:before{content:"";position:absolute;inset:-1px;border-radius:1.5rem;padding:1px;
+      background:linear-gradient(135deg,rgba(56,189,248,.6),rgba(59,130,246,.25) 30%,rgba(244,114,182,.25) 60%,rgba(251,191,36,.6));
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+
+    /* Tilt */
+    .tilt{transform-style:preserve-3d;transition:transform .35s ease}
+    .tilt:hover{transform:perspective(1000px) rotateX(2deg) rotateY(-2deg)}
+
+    /* Drag handle */
+    .drag-handle{--s:56px;position:absolute;top:0;bottom:0;left:var(--x,50%);width:var(--s);margin-left:calc(var(--s)/-2);
+      display:flex;align-items:center;justify-content:center;cursor:ew-resize;z-index:30}
+    .drag-handle:after{content:"";height:100%;width:2px;background:linear-gradient(to bottom,transparent,rgba(250,204,21,.6),transparent)}
+    .drag-dot{position:absolute;height:44px;width:44px;border-radius:9999px;background:rgba(250,204,21,.1);
+      backdrop-filter:blur(4px);border:1px solid rgba(250,204,21,.35);display:flex;align-items:center;justify-content:center;
+      box-shadow:0 0 0 6px rgba(250,204,21,.06),0 10px 30px rgba(0,0,0,.6)}
+    ::-webkit-scrollbar{height:10px;width:10px}
+    ::-webkit-scrollbar-thumb{background:#27272a;border-radius:9999px}
   </style>
 </head>
-<body class="bg-black text-white min-h-screen p-6 md:p-8">
+<body class="bg-black text-white min-h-screen overflow-x-hidden">
 
+  <!-- Orbs -->
+  <div class="orb a -top-40 -left-40 w-[38rem] h-[38rem]"></div>
+  <div class="orb b -bottom-40 -right-40 w-[40rem] h-[40rem]"></div>
+  <div class="orb c top-1/3 left-1/2 -translate-x-1/2 w-[42rem] h-[42rem]"></div>
 
-  <!-- Page Header -->
-  <header class="mb-8">
-    <div class="relative overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black p-8">
-      <div class="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl"></div>
-      <h1 class="text-4xl md:text-6xl font-bold leading-none mb-2">
-        {{ data.title }}
-      </h1>
-      <p class="text-zinc-400">Left: OpenAtlas • Right: Kulturpool</p>
+  <!-- Header / Toolbar -->
+  <header class="p-6 md:p-8">
+    <div class="neon rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 to-black/90 p-6 md:p-8 backdrop-blur">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900/70 text-xs text-zinc-300">
+            Live compare • <span class="text-sky-300">OpenAtlas</span> vs <span class="text-amber-300">Kulturpool</span>
+          </div>
+          <h1 class="text-4xl md:text-6xl mt-3 font-bold leading-tight">{{ data.title }}</h1>
+          <p class="text-zinc-400 mt-2">Left: OpenAtlas • Right: Kulturpool</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full text-xs border border-sky-700/40 bg-sky-500/10 text-sky-300">OpenAtlas</span>
+          <span class="px-3 py-1 rounded-full text-xs border border-amber-700/40 bg-amber-500/10 text-amber-300">Kulturpool</span>
+          <button id="swapBtn" class="px-3 py-2 text-sm rounded-xl border border-zinc-800 bg-zinc-900/70 hover:bg-zinc-800 transition">Swap sides</button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Two-Panel Layout -->
-  <main class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+  <!-- Split container -->
+  <div id="splitWrap" class="px-6 md:px-8">
+    <div class="relative rounded-3xl overflow-hidden border border-zinc-800 bg-zinc-950/60 backdrop-blur-xl">
+      <div id="panels" class="grid grid-cols-1 lg:grid-cols-2">
 
-    <!-- LEFT: OpenAtlas -->
-    <section class="space-y-8">
-      <!-- Source header -->
-      <div class="sticky top-6 z-10">
-        <div class="flex items-center justify-between rounded-2xl border border-sky-800/40 bg-sky-900/20 px-4 py-3 backdrop-blur">
-          <div class="flex items-center gap-2">
-            <span class="h-2.5 w-2.5 rounded-full bg-sky-400 animate-pulse"></span>
-            <h2 class="text-2xl font-bold tracking-tight">OpenAtlas</h2>
+        <!-- LEFT: OpenAtlas -->
+        <section id="leftPanel" class="p-6 md:p-8 space-y-8 border-b lg:border-b-0 lg:border-r border-zinc-800">
+          <div class="sticky top-2 z-10">
+            <div class="flex items-center justify-between rounded-2xl border border-sky-800/40 bg-sky-900/20 px-4 py-3 backdrop-blur">
+              <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-sky-400 animate-pulse"></span>
+                <h2 class="text-2xl font-bold tracking-tight">OpenAtlas</h2>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full bg-sky-500/15 text-sky-300 border border-sky-700/40">Source</span>
+            </div>
           </div>
-          <span class="text-xs px-2 py-1 rounded-full bg-sky-500/15 text-sky-300 border border-sky-700/40">Source</span>
-        </div>
-      </div>
 
-      <!-- Description -->
-      <div class="relative">
-        <div class="bg-zinc-900/80 backdrop-blur rounded-3xl border border-zinc-800 p-6 md:p-8 shadow-xl">
-          <div class="prose prose-invert max-w-none text-lg leading-relaxed">
-            {{ data.description }}
+          <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8 tilt">
+            <h3 class="text-3xl mb-4 text-sky-300">Description</h3>
+            <div class="prose prose-invert max-w-none text-lg leading-relaxed">{{ data.description }}</div>
           </div>
-        </div>
-      </div>
 
-      <!-- Participants -->
-      {% if data.participants %}
-      <div class="bg-zinc-900/80 backdrop-blur rounded-3xl border border-zinc-800 p-6 md:p-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-3xl md:text-4xl text-sky-300">Participants</h3>
-          <span class="text-[10px] uppercase tracking-wider text-sky-300/70">OpenAtlas</span>
-        </div>
-        <div class="grid sm:grid-cols-2 gap-4 md:gap-6">
-          {% for p in data.participants %}
-          <div class="bg-zinc-800 rounded-2xl p-5 shadow hover:bg-zinc-700 hover:scale-[1.01] transition border border-sky-800/30">
-            <p class="text-xl font-bold">{{ p.name }}</p>
-            <p class="uppercase text-xs tracking-wider text-gray-400">{{ p.role }}</p>
+          {% if data.participants %}
+          <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-3xl text-sky-300">Participants</h3>
+              <span class="text-[10px] uppercase tracking-wider text-sky-300/70">OpenAtlas</span>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4 md:gap-6">
+              {% for p in data.participants %}
+              <div class="bg-zinc-800/70 rounded-2xl p-5 border border-sky-800/30 hover:bg-zinc-800 transition tilt">
+                <p class="text-xl font-bold">{{ p.name }}</p>
+                <p class="uppercase text-xs tracking-wider text-gray-400">{{ p.role }}</p>
+              </div>
+              {% endfor %}
+            </div>
           </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
+          {% endif %}
 
-      <!-- Images -->
-      {% if data.files %}
-      <div class="bg-zinc-900/80 backdrop-blur rounded-3xl border border-zinc-800 p-6 md:p-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-3xl md:text-4xl text-sky-300">Gallery</h3>
-          <span class="text-[10px] uppercase tracking-wider text-sky-300/70">OpenAtlas</span>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          {% for m in data.files %}
-          <figure class="group relative overflow-hidden rounded-2xl border border-zinc-800 shadow-lg">
-            <img src="{{ m.IIIFBasePath }}/full/full/0/default.jpg" alt="{{ m.title }}" class="object-cover w-full h-64 md:h-72 transform group-hover:scale-105 transition duration-700">
-            <figcaption class="absolute bottom-0 left-0 w-full bg-black/70 text-white text-sm p-3 opacity-0 group-hover:opacity-100 transition">
-              {{ m.title }}
-            </figcaption>
-            <div class="absolute top-3 left-3 text-[10px] px-2 py-0.5 rounded-full bg-sky-600/20 text-sky-200 border border-sky-700/50">OpenAtlas</div>
-          </figure>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Related Events -->
-      {% if data.related_events %}
-      <div class="bg-zinc-900/80 backdrop-blur rounded-3xl border border-zinc-800 p-6 md:p-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-3xl md:text-4xl text-sky-300">Related Events</h3>
-          <span class="text-[10px] uppercase tracking-wider text-sky-300/70">OpenAtlas</span>
-        </div>
-        <div class="flex flex-col space-y-3">
-          {% for re in data.related_events %}
-          <a href="{{ re.url }}" class="block border border-sky-700/50 text-sky-300 rounded-xl p-4 text-center text-lg hover:bg-sky-500 hover:text-black transition">
-            {{ re.title }}
-          </a>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-    </section>
-
-    <!-- RIGHT: Kulturpool -->
-    <aside class="space-y-8 lg:sticky lg:top-6 self-start">
-      <!-- Source header -->
-      <div class="sticky top-6 z-10">
-        <div class="flex items-center justify-between rounded-2xl border border-amber-800/40 bg-amber-900/20 px-4 py-3 backdrop-blur">
-          <div class="flex items-center gap-2">
-            <span class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-            <h2 class="text-2xl font-bold tracking-tight">Kulturpool</h2>
+          {% if data.files %}
+          <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-3xl text-sky-300">Gallery</h3>
+              <span class="text-[10px] uppercase tracking-wider text-sky-300/70">OpenAtlas</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {% for m in data.files %}
+              <figure class="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40">
+                <img src="{{ m.IIIFBasePath }}/full/full/0/default.jpg" alt="{{ m.title }}" class="object-cover w-full h-64 md:h-72 transform group-hover:scale-105 transition duration-700">
+                <figcaption class="absolute bottom-0 left-0 w-full bg-black/70 text-white text-sm p-3 opacity-0 group-hover:opacity-100 transition">
+                  {{ m.title }}
+                </figcaption>
+                <div class="absolute top-3 left-3 text-[10px] px-2 py-0.5 rounded-full bg-sky-600/20 text-sky-200 border border-sky-700/50">OpenAtlas</div>
+              </figure>
+              {% endfor %}
+            </div>
           </div>
-          <span class="text-xs px-2 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-700/40">Source</span>
-        </div>
-      </div>
+          {% endif %}
 
-      <!-- Empty state / placeholder -->
-      <div class="relative overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black p-6 md:p-8">
-        <div class="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl"></div>
-        <h3 class="text-3xl md:text-4xl mb-3 text-amber-300">Incoming Data</h3>
-        <p class="text-zinc-400 mb-6">This panel will render Kulturpool data in a structure parallel to OpenAtlas.</p>
-        <!-- Skeletons -->
-        <div class="space-y-3">
-          <div class="h-4 w-2/3 rounded bg-zinc-800 animate-pulse"></div>
-          <div class="h-4 w-1/2 rounded bg-zinc-800 animate-pulse"></div>
-          <div class="h-32 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
-            <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
+          {% if data.related_events %}
+          <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-3xl text-sky-300">Related Events</h3>
+              <span class="text-[10px] uppercase tracking-wider text-sky-300/70">OpenAtlas</span>
+            </div>
+            <div class="flex flex-col space-y-3">
+              {% for re in data.related_events %}
+              <a href="{{ re.url }}" class="block border border-sky-700/50 text-sky-300 rounded-xl p-4 text-center text-lg hover:bg-sky-500 hover:text-black transition">
+                {{ re.title }}
+              </a>
+              {% endfor %}
+            </div>
           </div>
-        </div>
+          {% endif %}
+        </section>
+
+        <!-- RIGHT: Kulturpool -->
+        <aside id="rightPanel" class="p-6 md:p-8 space-y-8">
+          <div class="sticky top-2 z-10">
+            <div class="flex items-center justify-between rounded-2xl border border-amber-800/40 bg-amber-900/20 px-4 py-3 backdrop-blur">
+              <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <h2 class="text-2xl font-bold tracking-tight">Kulturpool</h2>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-700/40">Source</span>
+            </div>
+          </div>
+
+          <div class="neon rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black p-6 md:p-8">
+            <h3 class="text-3xl md:text-4xl mb-3 text-amber-300">Incoming Data</h3>
+            <p class="text-zinc-400 mb-6">This panel will render Kulturpool data in a structure parallel to OpenAtlas.</p>
+            <div class="space-y-3">
+              <div class="h-4 w-2/3 rounded bg-zinc-800 animate-pulse"></div>
+              <div class="h-4 w-1/2 rounded bg-zinc-800 animate-pulse"></div>
+              <div class="h-32 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
+                <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-2xl text-amber-300">Details</h4>
+              <span class="text-[10px] uppercase tracking-wider text-amber-300/70">Kulturpool</span>
+            </div>
+            <div class="space-y-2 text-zinc-400">
+              <div class="h-4 w-3/4 bg-zinc-800 rounded animate-pulse"></div>
+              <div class="h-4 w-1/3 bg-zinc-800 rounded animate-pulse"></div>
+            </div>
+          </div>
+
+          <div class="neon rounded-3xl bg-zinc-900/80 backdrop-blur border border-zinc-800 p-6 md:p-8">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-2xl text-amber-300">Attachments</h4>
+              <span class="text-[10px] uppercase tracking-wider text-amber-300/70">Kulturpool</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
+              <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      <!-- Placeholder sections to mirror left -->
-      <div class="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h4 class="text-2xl text-amber-300">Details</h4>
-          <span class="text-[10px] uppercase tracking-wider text-amber-300/70">Kulturpool</span>
-        </div>
-        <div class="space-y-2 text-zinc-400">
-          <div class="h-4 w-3/4 bg-zinc-800 rounded animate-pulse"></div>
-          <div class="h-4 w-1/3 bg-zinc-800 rounded animate-pulse"></div>
+      <!-- Draggable separator -->
+      <div id="handle" class="drag-handle" aria-label="Resize panels" role="separator" aria-orientation="vertical">
+        <div class="drag-dot">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="opacity-80"><path d="M10 6h4v2h-4V6zm0 10h4v2h-4v-2zm0-5h4v2h-4v-2z"/></svg>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h4 class="text-2xl text-amber-300">Attachments</h4>
-          <span class="text-[10px] uppercase tracking-wider text-amber-300/70">Kulturpool</span>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
-          <div class="h-24 rounded-2xl border border-zinc-800 bg-zinc-900"></div>
-        </div>
-      </div>
-    </aside>
+  <footer class="px-6 md:px-8 py-10 text-center text-xs text-zinc-500">OpenAtlas × Kulturpool comparison UI</footer>
 
-  </main>
+  <script>
+    // Draggable split
+    (function(){
+      const wrap = document.getElementById('splitWrap');
+      const panels = document.getElementById('panels');
+      const handle = document.getElementById('handle');
+      let x = 50, dragging = false;
+      const set = pct => { x = Math.min(85, Math.max(15, pct)); handle.style.setProperty('--x', x+'%'); panels.style.gridTemplateColumns = x+'% ' + (100-x)+'%'; };
+      set(x);
+      const onMove = e => {
+        if(!dragging) return;
+        const r = wrap.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const pct = (clientX - r.left) / r.width * 100;
+        set(pct);
+      };
+      const stop = () => dragging = false;
+      handle.addEventListener('mousedown', () => dragging = true);
+      handle.addEventListener('touchstart', () => dragging = true, {passive:true});
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, {passive:false});
+      window.addEventListener('mouseup', stop);
+      window.addEventListener('touchend', stop);
 
-  <!-- Footer Spacer -->
-  <div class="h-8"></div>
-
+      // Swap button
+      const swapBtn = document.getElementById('swapBtn');
+      swapBtn?.addEventListener('click', () => {
+        const left = document.getElementById('leftPanel');
+        const right = document.getElementById('rightPanel');
+        const parent = left.parentNode;
+        parent.insertBefore(right, left);
+      });
+    })();
+  </script>
 </body>
 </html>
