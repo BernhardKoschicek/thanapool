@@ -2,6 +2,8 @@ from dotenv import load_dotenv
 import os
 import requests
 import json
+
+
 def openrouter_call():
     load_dotenv()
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")

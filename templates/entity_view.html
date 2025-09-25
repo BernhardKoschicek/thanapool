@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data.title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;700&display=swap');
+        h1, h2 { font-family: 'Anton', sans-serif; letter-spacing: -1px; }
+        body { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen p-8">
+
+    <!-- Title Block -->
+    <header class="mb-16 text-center">
+        <h1 class="text-6xl md:text-7xl font-bold leading-none mb-4">
+            {{ data.title }}
+        </h1>
+        <p class="text-xl text-amber-400">
+            {{ data.start_date }} <span class="mx-2 text-gray-500">⇄</span> {{ data.end_date }}
+        </p>
+    </header>
+
+    <!-- Description -->
+    <section class="relative mb-16 max-w-4xl mx-auto">
+        <div class="bg-zinc-900 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition">
+            <div class="prose prose-invert max-w-none text-lg leading-relaxed">
+                {{ data.description.en }}
+            </div>
+        </div>
+    </section>
+
+    <!-- Participants -->
+    {% if data.participants %}
+    <section class="mb-16 max-w-5xl mx-auto">
+        <h2 class="text-4xl text-center mb-8 text-amber-400">Participants</h2>
+        <div class="grid sm:grid-cols-2 gap-6">
+            {% for p in data.participants %}
+            <div class="bg-zinc-800 rounded-2xl p-6 shadow hover:bg-zinc-700 hover:scale-[1.02] transition transform">
+                <p class="text-xl font-bold">{{ p.name }}</p>
+                <p class="uppercase text-xs tracking-wider text-gray-400">{{ p.role }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Images -->
+    {% if data.media %}
+    <section class="mb-16 max-w-6xl mx-auto">
+        <h2 class="text-4xl text-center mb-8 text-amber-400">Gallery</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for m in data.media %}
+            <figure class="group relative overflow-hidden rounded-2xl shadow-lg">
+                <img src="{{ m.url }}" alt="{{ m.title }}" class="object-cover w-full h-72 transform group-hover:scale-105 transition duration-700">
+                <figcaption class="absolute bottom-0 left-0 w-full bg-black/70 text-white text-sm p-3 opacity-0 group-hover:opacity-100 transition">
+                    {{ m.title }}
+                </figcaption>
+            </figure>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Related Events -->
+    {% if data.related_events %}
+    <section class="mb-12 max-w-3xl mx-auto">
+        <h2 class="text-4xl text-center mb-8 text-amber-400">Related Events</h2>
+        <div class="flex flex-col space-y-4">
+            {% for re in data.related_events %}
+            <a href="{{ re.url }}" class="block border border-amber-500 text-amber-400 rounded-xl p-4 text-center text-xl hover:bg-amber-400 hover:text-black transition">
+                {{ re.title }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+
+</body>
+</html>

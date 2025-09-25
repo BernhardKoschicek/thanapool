@@ -6,6 +6,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
+    return render_template("index.html", openrouter=openrouter_call())
+
+@app.route("/<id_: int>")
+def entity_view(id_: int):
     data = {
         "id": 196314,
         "title": "The Novara sails from Sydney to Auckland",
@@ -30,7 +34,7 @@ def index():
             {"title": "The Novara sails from Auckland to Tahiti", "url": "#"}
         ]
     }
-    return render_template("index.html", openrouter=openrouter_call(), data=data)
+    return render_template("entity_view.html", data=data)
 
 if __name__ == "__main__":
     app.run(debug=True)
