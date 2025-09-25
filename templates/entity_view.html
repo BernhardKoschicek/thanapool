@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ data.title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        const kpData = {{ kp_data|tojson }};
+        const data = {{ data|tojson }};
+        console.log(kpData);
+        console.log(data);
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;700&display=swap');
         h1, h2 { font-family: 'Anton', sans-serif; letter-spacing: -1px; }

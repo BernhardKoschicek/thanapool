@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+import requests
 
 from models.openrouter import openrouter_call
 from models.thanados_api import get_thanados_data
@@ -13,10 +14,25 @@ def index():
 
 @app.route("/<id_>")
 def entity_view(id_: int):
+    print(id_)
+
     data = get_thanados_data(id_)
+    name = data['title']
 
-    return render_template("entity_view.html", data=data)
+    base_url = "https://api.kulturpool.at/search"
+    params = {
+        "q": name,  # Pflichtparameter: Suchbegriff
+    }
 
+    try:
+        kp_response = requests.get(base_url, params=params, timeout=10)
+        kp_response.raise_for_status()
+        kp_data = kp_response.json()
+    except requests.RequestException as e:
+        print(f"Fehler bei API-Request: {e}")
+        kp_data = {"found": 0, "hits": []}
+
+    return render_template("entity_view.html", data=data, kp_data=kp_data)
 
 @app.route("/openrouter/<id_>")
 def openrouter_view(id_: int):
