@@ -15,21 +15,28 @@
   .muted { color:#666; font-size:12px; }
   .error { color:#b00020; white-space:pre-wrap; }
   a { color:#0b57d0; text-decoration:none; } a:hover{ text-decoration:underline; }
+  .dep-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+.dep-card { border:1px solid #eee; border-radius:8px; padding:6px; background:#fff; }
+.dep-img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px; background:#f0f0f0; }
+.cap { font-size:12px; color:#666; margin-top:4px; }
+.kv { margin:6px 0; font-size:14px; }
+.kv b { font-weight:600; }
+
 </style>
 </head>
 <body>
-<h1 style="margin:0 0 12px">Entity depiction + Kulturpool search</h1>
+<h1 style="margin:0 0 12px">OpenAtlas x Kulturpool</h1>
 
 <div class="wrap">
   <section class="panel">
-    <h2 style="margin:0 0 8px">Entity</h2>
+    <h2 style="margin:0 0 8px">OpenAtlas Entity</h2>
     <div id="eLoad" class="muted">Loading…</div>
     <div id="entity"></div>
     <div id="eErr" class="error"></div>
   </section>
 
   <section class="panel">
-    <h2 style="margin:0 0 8px">Kulturpool</h2>
+    <h2 style="margin:0 0 8px">Kulturpool Matches</h2>
     <div id="kLoad" class="muted">Waiting for entity name…</div>
     <div id="kp" class="grid"></div>
     <div id="kErr" class="error"></div>
@@ -38,7 +45,7 @@
 
 <script>
 (async () => {
-  const ENTITY_ID = 196078;
+  const ENTITY_ID = 50505;
   const OA = 'https://thanados.openatlas.eu/api/0.4';
   const KP = 'https://api.kulturpool.at/search';
 
@@ -86,34 +93,72 @@
   }
 
   function renderEntity(fcLike) {
-    const feat = fcLike?.features?.[0] || fcLike;
-    const title = feat?.properties?.title || `Entity ${ENTITY_ID}`;
-    const dep0 = Array.isArray(feat?.depictions) ? feat.depictions[0] : null;
-    const iiifBase = dep0?.IIIFBasePath;
-    const imgUrl = iiifBase ? iiifImg(iiifBase) : null;
+  const feat = fcLike?.features?.[0] || fcLike;
 
-    eBox.innerHTML = `
-      <div><strong>${esc(title)}</strong></div>
-      ${imgUrl ? `<img class="img" src="${imgUrl}" alt="${esc(title)}">`
-               : `<div class="muted">No depiction found.</div>`}
+  // Basics
+  const title = feat?.properties?.title || `Entity ${ENTITY_ID}`;
+  const crmClass = feat?.crmClass || '';
+  const systemClass = feat?.systemClass || '';
+  const types = Array.isArray(feat?.types) ? feat.types.map(t => t?.label || t?.name).filter(Boolean) : [];
+  const ts = feat?.when?.timespans?.[0] || {};
+  const from = ts?.start || ts?.begin_of_the_begin || ts?.earliest || '';
+  const to   = ts?.end   || ts?.end_of_the_end   || ts?.latest   || '';
+
+  // Depictions
+  const deps = Array.isArray(feat?.depictions) ? feat.depictions : [];
+  const main = deps[0];
+  const mainIIIF = main?.IIIFBasePath ? iiifImg(main.IIIFBasePath) : null;
+
+  const infoRows = [
+    crmClass ? `<div class="kv"><b>CRM class:</b> ${esc(crmClass)}</div>` : '',
+    systemClass ? `<div class="kv"><b>System class:</b> ${esc(systemClass)}</div>` : '',
+    types.length ? `<div class="kv"><b>Types:</b> ${esc(types.join(', '))}</div>` : '',
+    (from || to) ? `<div class="kv"><b>When:</b> ${esc([from,to].filter(Boolean).join(' – '))}</div>` : ''
+  ].join('');
+
+  const grid = deps.slice(0, 6).map(d => {
+    const img = d?.IIIFBasePath ? iiifImg(d.IIIFBasePath, 400) : null;
+    const cap = d?.title || '';
+    const link = d?.url || d?.IIIFManifest || '#';
+    return `
+      <article class="dep-card">
+        ${img ? `<a href="${esc(link)}" target="_blank" rel="noopener">
+                    <img class="dep-img" src="${esc(img)}" alt="${esc(cap)}" referrerpolicy="no-referrer">
+                 </a>`
+              : `<div class="dep-img"></div>`}
+        ${cap ? `<div class="cap">${esc(cap)}</div>` : ``}
+      </article>
     `;
-    eLoad.textContent = '';
-    // Use “Novara” if present in title, else first word
-    const q = /novara/i.test(title) ? 'Novara' : (title.split(/\s+/)[0] || 'Novara');
-    return q;
-  }
+  }).join('');
+
+  eBox.innerHTML = `
+    <div style="display:grid; gap:10px;">
+      <div><strong>${esc(title)}</strong></div>
+      ${mainIIIF ? `<img class="img" src="${esc(mainIIIF)}" alt="${esc(title)}" referrerpolicy="no-referrer">`
+                  : `<div class="muted">No depiction found.</div>`}
+      ${infoRows}
+      ${deps.length ? `<div class="dep-grid">${grid}</div>` : ``}
+    </div>
+  `;
+  eLoad.textContent = '';
+
+  // Keep your search query logic
+  return /novara/i.test(title) ? 'Novara' : (title.split(/\s+/)[0] || 'Novara');
+}
+
 
   function pickThumb(doc) {
-    // Some fields can be arrays. Normalize to string.
-    const firstStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string') : (typeof v === 'string' ? v : null);
-    return (
-      firstStr(doc.edmPreview) ||
-      firstStr(doc.thumbnail) ||
-      firstStr(doc.preview) ||
-      firstStr(doc.image) ||
-      (Array.isArray(doc.identifier) ? doc.identifier.find(x => typeof x === 'string' && /\.(jpg|jpeg|png|webp)$/i.test(x)) : null)
-    );
-  }
+  const firstStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string' && x) : (typeof v === 'string' ? v : null);
+  // Per docs: previewImage → object → isShownBy
+  return (
+    firstStr(doc.previewImage) ||
+    firstStr(doc.object) ||
+    firstStr(doc.isShownBy) ||
+    null
+  );
+}
+
+
 
   function pickLink(doc) {
     const firstStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string') : (typeof v === 'string' ? v : null);
@@ -125,42 +170,66 @@
   }
 
   async function searchKulturpool(q) {
-    const u = new URL(KP);
-    u.searchParams.set('q', q);
-    u.searchParams.set('per_page', '12');
-    // You can bias to images:
-    // u.searchParams.set('filter_by','edmType:=IMAGE');
-    return fetchJSONWithProxies(u.toString());
-  }
+  const u = new URL(KP);
+  u.searchParams.set('q', q);
+  u.searchParams.set('per_page', '12');
+  u.searchParams.set('filter_by', 'edmType:=IMAGE'); // only items with images
+  // u.searchParams.set('use_cache', 'true'); // optional
+  return fetchJSONWithProxies(u.toString());
+}
+
 
   function renderKulturpool(resp) {
-    const hits = Array.isArray(resp?.hits)
-      ? resp.hits
-      : Array.isArray(resp?.results?.[0]?.hits)
-        ? resp.results[0].hits
-        : [];
+  // Extract hits from Typesense-style response
+  const hits = Array.isArray(resp?.hits)
+    ? resp.hits
+    : Array.isArray(resp?.results?.[0]?.hits)
+      ? resp.results[0].hits
+      : [];
 
-    kLoad.textContent = '';
-    if (!hits.length) { kBox.innerHTML = `<div class="muted">No results.</div>`; return; }
-
-    kBox.innerHTML = hits.map(h => {
-      const doc = h.document || {};
-      const title = doc.title || doc.alternative || '(untitled)';
-      const provider = doc.dataProvider || doc.publisher || '';
-      const link = pickLink(doc);
-      const thumb = pickThumb(doc);
-
-      return `
-        <article class="card">
-          ${thumb ? `<img class="thumb" src="${esc(thumb)}" alt="">` : `<div class="thumb"></div>`}
-          <div style="margin-top:6px;">
-            ${link ? `<a target="_blank" rel="noopener" href="${esc(link)}">${esc(title)}</a>` : `<div>${esc(title)}</div>`}
-            ${provider ? `<div class="muted">${esc(provider)}</div>` : ``}
-          </div>
-        </article>
-      `;
-    }).join('');
+  kLoad.textContent = '';
+  if (!hits.length) {
+    kBox.innerHTML = `<div class="muted">No results.</div>`;
+    return;
   }
+
+  // Helpers: normalize array-or-string fields
+  const arrStr = (v) => Array.isArray(v) ? v.find(x => typeof x === 'string' && x) : (typeof v === 'string' ? v : null);
+
+  const pickThumb = (doc) =>
+    arrStr(doc.previewImage) ||    // documented preview
+    arrStr(doc.object) ||          // medium-sized image
+    arrStr(doc.isShownBy) ||       // full image
+    null;
+
+  const pickLink = (doc) =>
+    arrStr(doc.isShownAt) ||       // institution detail page
+    arrStr(doc.isShownBy) ||       // direct image if no page
+    arrStr(doc.object) ||          // medium image
+    null;
+
+  kBox.innerHTML = hits.map(h => {
+    const doc = h.document || {};
+    const title = arrStr(doc.title) || arrStr(doc.alternative) || '(untitled)';
+    const provider = arrStr(doc.dataProvider) || arrStr(doc.publisher) || '';
+    const link = pickLink(doc);
+    const thumb = pickThumb(doc);
+
+    return `
+      <article class="card">
+        ${thumb
+          ? `<img class="thumb" src="${esc(thumb)}" alt="${esc(title)}" referrerpolicy="no-referrer"
+                 onerror="this.onerror=null; this.style.display='none';">`
+          : `<div class="thumb"></div>`}
+        <div style="margin-top:6px;">
+          ${link ? `<a target="_blank" rel="noopener" href="${esc(link)}">${esc(title)}</a>` : `<div>${esc(title)}</div>`}
+          ${provider ? `<div class="muted">${esc(provider)}</div>` : ``}
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
 
   try {
     const entity = await fetchEntity();
