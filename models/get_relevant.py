@@ -38,7 +38,7 @@ def get_all_info(name):
                 text_dict[doc['id']] = doc['title'][0] + ' ' + doc['description'][0]
             else:
                 text_dict[doc['id'][0]] = doc['title'][0]
-            if doc['previewImage']:
+            if 'previewImage' in doc.keys():
                 info_dict[doc['id']] = [doc['title'][0], doc['previewImage'], doc['isShownAt']]
             else:
                 info_dict[doc['id']] = [doc['title'][0], '', doc['isShownAt']]

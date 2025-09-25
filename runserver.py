@@ -88,7 +88,6 @@ def openrouter_view(id_: int):
     openrouter = openrouter_call(description)
     kp_descrip_result, kp_keyall_result, kp_title_result, kp_keyspec_result = kulturpool_main(description, openrouter, title)
     relv = get_relevant(title, description)
-    print(relv)
 
     return render_template(
         "openrouter_view.html",
