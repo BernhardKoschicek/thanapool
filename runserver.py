@@ -19,11 +19,21 @@ def entity_view(id_: int):
 
     data = get_thanados_data(id_)
     name = data['title']
+    main_type = ''
+    if data['types']:
+        main_type = data['types'][0]
+    if main_type and main_type['isStandard']:
+        main_type = main_type['title']
+
 
     base_url = "https://api.kulturpool.at/search"
     params = {
-        "q": name,  # Pflichtparameter: Suchbegriff
+        "q": name + " " + main_type,
+        "per_page": 250,
     }
+
+
+
 
     try:
         kp_response = requests.get(base_url, params=params, timeout=10)
