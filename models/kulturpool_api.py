@@ -3,7 +3,6 @@ import requests
 # Base URL for Kulturpool API
 BASE_URL = "https://api.kulturpool.at"
 
-# your API function
 def kulturpool_main(item):
     response = requests.get(f"{BASE_URL}/search?q={item}")
     data = response.json()
@@ -22,20 +21,24 @@ def kulturpool_main(item):
 
 # description
 
-def kulturpool_search(extracted):
-    kulturpool_main()
-    # loop over person_names
-    for person in extracted['person_names']:
+def kulturpool_search_extended(openrouter_data):
+    # loops
+    for person in openrouter_data['person_names']:
         kulturpool_main(person)
-
-    # loop over place_names
-    for place in extracted['place_names']:
+    for place in openrouter_data['place_names']:
         kulturpool_main(place)
-
-    # optional: loop over years (but may be noisy)
-    for year in extracted['dates']:
+    for year in openrouter_data['dates']:
         kulturpool_main(year)
 
+def extract_keywords(openrouter_data):
+    keywords = []
+    for values in openrouter_data.values():
+        keywords.extend(values)
+    return keywords
 
-# request
-kulturpool_main("Helmker was a wealthy man with links to the Huosi, and Störmer 1984, p. 664, was of the opinion he belonged to the Huosi, himself. It is generally assumed that Helmker was trying to establish a small monastery in Singenbach. He endowed the church dedicated to St. Peter that he had built there with generous property in Singenbach, Ried, Walkertshofen and Pleitmannswang (TF 118), and also gave himself to the church, and then conveyed it to the bishopric of Freising (TF 119). Helmker had a son, named Rekinhoh, who is mentioned in TF 119.")
+def kulturpool_search(openrouter_data):
+    keywords = extract_keywords(openrouter_data)
+    query_string = " ".join(keywords)  # combine into string
+    kulturpool_main(query_string)
+
+kulturpool_search()
