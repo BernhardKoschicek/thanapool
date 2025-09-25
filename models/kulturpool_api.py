@@ -69,7 +69,7 @@ def extract_keywords(openrouter_data):
     keywords_all = " ".join(keywords)
     return keywords_all
 
-def kulturpool_main(description, openrouter_data, name):
+def kulturpool_main(description, openrouter_data, title):
     """Function that calls the search function to query Kulturpool with
     a) the description and
     b) the all keywords.
@@ -81,7 +81,9 @@ def kulturpool_main(description, openrouter_data, name):
     # get keywords and try with all keywords
     keywords_all = extract_keywords(openrouter_data)
     result_keyall = kulturpool_search(keywords_all)
+    # query with title
+    result_title = kulturpool_search(title)
     # specific for each category
     result_keyspec = kulturpool_search_extended(openrouter_data)
-    return result_descrip, result_keyall, result_keyspec
+    return result_descrip, result_keyall, result_title, result_keyspec
 
