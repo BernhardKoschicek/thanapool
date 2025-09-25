@@ -12,12 +12,38 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
+import re
+def extract_localized_text(text, preferred_lang="de"):
+    # Regex patterns for each language
+    patterns = {
+        "de": r"##de_##(.*?)##_de##",
+        "en": r"##en_##(.*?)##_en##"
+    }
+
+    # Try preferred language first
+    match = re.search(patterns.get(preferred_lang, ""), text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+
+    # Fallback to English if available
+    if preferred_lang != "en":
+        match = re.search(patterns["en"], text, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+
+    # Fallback: return original text
+    return text.strip()
+
 
 @app.route("/<id_>")
 def entity_view(id_: int):
     print(id_)
 
     data = get_thanados_data(id_)
+    print(data)
+    if data['description']:
+        data["description"] = extract_localized_text(data['description'])
+
     name = data['title']
     main_type = ''
     if data['types'] and data['types'][0]['isStandard']:
@@ -29,6 +55,8 @@ def entity_view(id_: int):
         "q": name + " " + main_type,
         "per_page": 250,
     }
+
+
 
 
 
