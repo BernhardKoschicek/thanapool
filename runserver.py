@@ -43,15 +43,15 @@ def openrouter_view(id_: int):
     title = data['title']
     dates = data['when']
     types = [type_['title'] for type_ in data['types']]
-    openrouter = openrouter_call()
+    openrouter = openrouter_call(description)
     return render_template(
         "openrouter_view.html",
         external_references=external_references,
         description=description,
         title=title,
         dates=dates,
-        types=types)
-
+        types=types,
+        openrouter=openrouter)
 
 if __name__ == "__main__":
     app.run(debug=True)
