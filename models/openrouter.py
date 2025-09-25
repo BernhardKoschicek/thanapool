@@ -7,18 +7,32 @@ import json
 def get_prompt(text):
     prompt = f"""
     **Instructions:**
-    Analyze the text {text}.
-    Extract keywords in the categories given. Return ONLY a Python dictionary in this exact format 
-    (without any extra text, quotes around keys are optional):
-
-    "person_names": ["Name1", "Name2"],
-    "place_names": ["Place1", "Place2"],
-    "dates": ["Date1", "Date2"]
-
-    Return ONLY a valid Python dictionary in exactly the following format 
-    (no spaces or newlines!). <value> must always be a list of strings.
-    {{'person_names': <value>, 'place_names': <value>, 'dates': <value>}}
+    Analyze the text: {text}
+    Extract keywords in the following categories:
+    
+    - person_names
+    - entity_names
+    - place_names
+    - dates
+    - subject
+    - material_information
+    - actions
+    
+    Return ONLY a valid JSON object in the following format (keys must match exactly, values are lists of strings):
+    - DO NOT wrap your output in markdown or code blocks.
+    - DO NOT include extra text, explanations, or newlines.
+    
+    {{
+      "person_names": [],
+      "entity_names": [],
+      "place_names": [],
+      "dates": [],
+      "taxonomic_subject": [],
+      "typological_subject": [],
+      "actions": []
+    }}
     """
+
     return prompt
 
 def check_if_dict(output):
@@ -32,12 +46,10 @@ def check_if_dict(output):
             data = ast.literal_eval(output)
             if isinstance(data, dict):
                 print("Success: valid dictionary")
-                print(output)
                 result = data
                 valid = True
             else:
                 print("Parsed object is not a dictionary")
-                print(output)
                 result = None
         except Exception as e:
             print("Failed to parse:", e)
@@ -68,4 +80,3 @@ def openrouter_call(text):
     )
     output = response.json()['choices'][0]['message']['content']
     return check_if_dict(output)
-    #return output
