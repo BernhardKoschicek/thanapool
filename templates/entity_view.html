@@ -234,14 +234,36 @@
         if (hasMore) btn.addEventListener('click', renderBatch);
         return btn;
       }
+      function applyStreamIn(el, i){
+  // random curved offset and slight rotation
+  const dir = Math.random() < .5 ? 1 : -1;
+  el.style.setProperty('--sx',  (dir * (80 + Math.random()*120)) + 'px');
+  el.style.setProperty('--sy',  (40 + Math.random()*90) + 'px');
+  el.style.setProperty('--rot', (dir * (6  + Math.random()*10))  + 'deg');
+  el.style.setProperty('--delay', (i * 35) + 'ms'); // stagger within batch
+  el.classList.add('stream-in');
+  el.addEventListener('animationend', () => {
+    el.classList.remove('stream-in');
+    el.style.removeProperty('--sx');
+    el.style.removeProperty('--sy');
+    el.style.removeProperty('--rot');
+    el.style.removeProperty('--delay');
+  }, { once: true });
+}
 
       function renderBatch(){
         const last = grid.lastElementChild;
         if (last && last.dataset && last.dataset.role === 'load-more') grid.removeChild(last);
         const count = (idx === 0) ? INITIAL_BATCH : LOAD_MORE_BATCH;
         const end = Math.min(idx + count, items.length);
-        for (; idx < end; idx++) grid.appendChild(tileFor(items[idx]));
-        grid.appendChild(makeLoadMore(idx < items.length));
+        let k = 0; // local index for stagger
+for (; idx < end; idx++){
+  const card = tileFor(items[idx]);
+  applyStreamIn(card, k++);
+  grid.appendChild(card);
+}
+grid.appendChild(makeLoadMore(idx < items.length));
+
       }
 
       renderBatch();

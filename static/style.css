@@ -79,3 +79,30 @@ header, #splitWrap, footer { position: relative; z-index: 3; }
   .orb { animation: none; }
   #cursor-glow { display: none; }
 }
+
+/* Cinematic stream-in for load-more tiles */
+.stream-in{
+  will-change: transform, opacity, filter;
+  animation: arcIn .9s cubic-bezier(.2,.7,0,.98) both;
+  animation-delay: var(--delay, 0ms);
+}
+@keyframes arcIn{
+  0%{
+    opacity: 0;
+    transform: translate3d(var(--sx,0), var(--sy,20px), 0) scale(.96) rotate(var(--rot,0deg));
+    filter: blur(8px);
+  }
+  60%{
+    opacity: .9;
+    transform: translate3d(calc(var(--sx)*.25), calc(var(--sy)*.25), 0) scale(1.02) rotate(calc(var(--rot)*.3));
+    filter: blur(12px);
+  }
+  100%{
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1) rotate(0);
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce){
+  .stream-in{ animation: none !important; filter: none !important; opacity: 1; transform: none; }
+}
