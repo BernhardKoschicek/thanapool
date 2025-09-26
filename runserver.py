@@ -62,7 +62,7 @@ def entity_view(id_: int):
 
     relv = get_relevant(name, description)
     openrouter = openrouter_call(description)
-    kp_descrip_result, kp_keyall_result, kp_title_result = kulturpool_main(description, openrouter, name)
+    kp_descrip_result, kp_keyall_result, kp_title_result, kp_person, kp_place = kulturpool_main(description, openrouter, name)
 
     all_others = kp_descrip_result + kp_keyall_result + kp_title_result
     unique_by_id = list({item["id"]: item for item in all_others}.values())
@@ -79,7 +79,7 @@ def openrouter_view(id_: int):
     dates = data['when']
     types = [type_['title'] for type_ in data['types']]
     openrouter = openrouter_call(description)
-    kp_descrip_result, kp_keyall_result, kp_title_result = kulturpool_main(description, openrouter, title)
+    kp_descrip_result, kp_keyall_result, kp_title_result, kp_person, kp_place = kulturpool_main(description, openrouter, title)
     relv = get_relevant(title, description)
 
     return render_template(

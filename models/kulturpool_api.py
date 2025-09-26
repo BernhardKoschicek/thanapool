@@ -1,25 +1,18 @@
-"""
-This script queries the database Kulturpool through API.
-The queries are based on the output from openrouter.py.
-The output will be dictionaries of the structure
-"""
-import requests
 import re
+from models.get_relevant import find_number_of_results, get_data_of_page
 
-# Base URL for Kulturpool API
-url = "https://api.kulturpool.at/search"
-
-def kulturpool_search(name):
+def kulturpool_search(name, n = 100):
     """
-    Para
-    function that calls kulturpool api and queries the database for param: item
-    returns result as dict
+    Gets query response from find_number_of_results.
+    :param name: query string
+    :param n: number of results wanted
+    :return res_list: list of dictionaries, one per result, containing id, title, previewImage, and isShownAt
     """
     number_of_results = find_number_of_results(name)
     print(f'Number of results found: {number_of_results}')
 
     info_dict = dict()
-    for i in range(1, min(number_of_results, 100) // 20 + 2):
+    for i in range(1, min(number_of_results, n) // 20 + 2):
         data = get_data_of_page(name, i)
         for hit in data['hits']:
             doc = hit['document']
@@ -37,42 +30,50 @@ def kulturpool_search(name):
         res_list.append(d)
     return res_list
 
-def find_number_of_results(name):
-    params = {
-        'q': name,
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
-    return data["found"]
-
-def get_data_of_page(name, page):
-    params = {
-        'q': name,
-        'page': page
-    }
-    response = requests.get(url, params=params)
-    return response.json()
 
 def description_text(description):
-    """Function to clean up the description if there is a description in German and in English."""
+    """
+    Gets the description from Thanados and cleans the description if there is a German and English description.
+    :param description: description from object in Thanados
+    :return description: returns the cleaned or if no action necessary, the original description
+    """
     match = re.search(r"##de_##(.*?)##_de##", description, re.DOTALL | re.IGNORECASE)
     if match:
         return match.group(1).strip()
     else:
         return description
 
-def kulturpool_search_extended(openrouter_data):
-    """Function to loop through all categories provided in the dictionary from openrouter."""
-    keys = ['person_names', 'entity_names', 'place_names', 'dates', 'taxonomic_subject',
-            'typological_subject', 'actions']
-    for i in keys:
-        for j in openrouter_data[i]:
-            category_results = kulturpool_search(j)
-            return category_results
+def kulturpool_search_extended(openrouter_data, categories = None):
+    """
+    Gets the results from openrouter.py.
+    Queries the Kulturpool (with kulturpool_search function) for each keyword for specified categories, provided by openrouter.
+    :param openrouter_data: dictionary of keywords for multiple categories
+    :param categories: default is person_names and place_names
+    :return category_results: list of the results from the queries for each keyword for the specified categories
+    """
+    if categories is None:
+        categories = ["person_names", "place_names"]
+
+    all_results = {}
+
+    for category in categories:
+        if category in openrouter_data:
+            all_results[category] = {}
+            for keyword in openrouter_data[category]:
+                all_results[category][keyword] = kulturpool_search(keyword)
+
+    pers_results = all_results.get("person_names", {})
+    plac_results = all_results.get("place_names", {})
+
+    return pers_results, plac_results
+
 
 def extract_keywords(openrouter_data):
-    """Function that extracts the keywords from the openrouter dictionary
-    and joins them to one long string to query.
+    """
+    Gets the keyword dictionary from openrouter.py and extracts each keyword.
+    The keywords are then joined to use as a query.
+    :param openrouter_data: dictionary of keywords for multiple categorised
+    :return keywords_all: str, all keywords from openrouter joined together
     """
     keywords = []
     for values in openrouter_data.values():
@@ -81,18 +82,18 @@ def extract_keywords(openrouter_data):
     return keywords_all
 
 def kulturpool_main(description, openrouter_data, title):
-    """Function that calls the search function to query Kulturpool with
-    a) the description and
-    b) the all keywords.
-    parameters: description and the openrouter dictionary.
-    returns the result dictionary from the queries. """
+    """
+    Run Kulturpool queries using the description from Thanados, the keywords from openrouter as one string,
+    the title from Thanados,and category-specific keywords from openrouter.
+    :param description: str, free-text description from Thanados
+    :param openrouter_data: dict, keywords grouped by categories
+    :param title: str, title string from Thanados
+    :return: returns the lists result_descrip, result_keyall, result_title, person_result, place_result
+    """
     # get description and try query with description
     descrip = description_text(description)
-
     result_keyall = []
     result_descrip = []
-    print('descrip')
-    print(descrip)
     if description != '':
         result_descrip = kulturpool_search(descrip)
 
@@ -106,8 +107,7 @@ def kulturpool_main(description, openrouter_data, title):
 
     # query with title
     result_title = kulturpool_search(title)
-    # specific for each category
-    #result_keyspec = kulturpool_search_extended(openrouter_data)
-    return result_descrip, result_keyall, result_title
-    #result_keyspec
+    # for specified categories (person and place)
+    person_result, place_result = kulturpool_search_extended(openrouter_data)
+    return result_descrip, result_keyall, result_title, person_result, place_result
 
