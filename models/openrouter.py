@@ -5,6 +5,11 @@ import requests
 import json
 
 def get_prompt(text):
+    """
+    returns prompt for 'call_prompt'.
+    :param input_text: str, text for which similar matches should be found
+    :return: str, prompt to be given to the API.
+    """
     prompt = f"""
     **Instructions:**
     Analyze the text: {text}
@@ -36,6 +41,12 @@ def get_prompt(text):
     return prompt
 
 def check_if_dict(output, valid):
+    """
+    checks if output from the API can be transformed into dictionary.
+    :param output: str, output from the API.
+    :param valid: bool, True if output can be transformed into a dictionary. False otherwise.
+    :return: dictionary and True or string and False.
+    """
     try:
         data = ast.literal_eval(output)
         if isinstance(data, dict):
@@ -48,6 +59,11 @@ def check_if_dict(output, valid):
     return result, valid
 
 def call_prompt(text):
+    """
+    perfroms API call.
+    :param text: str, text to find keywords for.
+    :return: str, output from the API.
+    """
     load_dotenv()
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
     print(f"API Key loaded: {OPENROUTER_API_KEY is not None}")
@@ -73,6 +89,13 @@ def call_prompt(text):
     return output
 
 def openrouter_call(text):
+    """
+    For a text 'text' openrouter_call builds a prompt and sends it to the openAI API.
+    The API filters for tke keywords specified in the prompt.
+    Finally, it returns the dictionary of keywords (if possible)
+    :param text: str, text to find keywords for.
+    :return: dictionary of keywords (if possible). Form: {'keyword1': [value1, value2], 'keyword2':[], ...}
+    """
     output = call_prompt(text)
     valid = False
 

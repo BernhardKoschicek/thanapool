@@ -65,7 +65,7 @@ def get_all_info(name, n=50):
 
 def get_prompt(input_text, data):
     """
-    returns prompt.
+    returns prompt for 'api_call'
     :param input_text: str, text for which similar matches should be found
     :param data: dictionary of the form {'id', 'text'}
     :return: str, prompt to be given to the API.
@@ -129,8 +129,8 @@ def api_call(text, data):
 
 def get_relevant(name, description):
     """
-    fuction that combines all the other functions. For a name it queries data from Kulturpool,
-    then it builds a prompt, combining the description with the data from Kulturpool.
+    For a name 'name' get_relevant queries data from Kulturpool (combining title and description),
+    then it builds a prompt, combining the description 'description' with the data from Kulturpool.
     Finally, it returns up to 9 "most relevant" samples from Kulturpool.
     :param name: str, query string
     :param description: str, description of the entity
