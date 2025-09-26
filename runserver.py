@@ -1,19 +1,23 @@
 from flask import Flask, render_template
-import requests
-
+from flask_caching import Cache
+import re
 from models.openrouter import openrouter_call
 from models.thanados_api import get_thanados_data
 from models.kulturpool_api import kulturpool_main
 from models.get_relevant import  get_relevant
 
 app = Flask(__name__)
+app.config['CACHE_TYPE'] = 'FileSystemCache'
+app.config['CACHE_DIR'] = '/var/tmp/flask-cache'
+app.config['CACHE_DEFAULT_TIMEOUT'] = 3600
+cache = Cache(app)
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-import re
+
 def extract_localized_text(text, preferred_lang="de"):
     # Regex patterns for each language
     patterns = {
@@ -37,9 +41,8 @@ def extract_localized_text(text, preferred_lang="de"):
 
 
 @app.route("/<int:id_>")
+@cache.cached(timeout=120)
 def entity_view(id_: int):
-    print(id_)
-
     data = get_thanados_data(id_)
 
     description = ''
