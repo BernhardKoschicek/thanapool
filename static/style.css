@@ -1,30 +1,30 @@
+/* ====== /static/style.css ====== */
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;700&display=swap');
 
 h1, h2, h3, h4 { font-family: 'Anton', sans-serif; letter-spacing: -.5px }
 body { font-family: 'Space Grotesk', sans-serif }
 
 /* FX canvases */
-#fx-stars, #fx-trail {
-  position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none;
-}
+#fx-stars { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+
+/* Magnifier lens */
 #magnifier-lens{
   position: fixed;
-  width: 200px; height: 200px;           /* a bit bigger helps visibility */
+  width: 200px; height: 200px;
   border-radius: 9999px;
   pointer-events: none;
   z-index: 5;
-  background-color: #000;                 /* solid base behind the image */
-  background-repeat: no-repeat, no-repeat;/* for vignette + image */
-  background-size: 200px 200px, 0 0;      /* JS sets the 2nd size */
-  background-position: center, 0 0;       /* JS moves the 2nd layer */
+  background-color: #000;
+  background-repeat: no-repeat, no-repeat; /* vignette, image */
+  background-size: 200px 200px, 0 0;      /* JS sets 2nd size */
+  background-position: center, 0 0;       /* JS moves 2nd layer */
   border: 2px solid rgba(255,255,255,.65);
   box-shadow: 0 14px 60px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.12);
   display: none;
-  /* critical: no blending so it’s not washed out */
   mix-blend-mode: normal;
 }
 
-
+/* Cursor glow + scroll bar */
 #cursor-glow {
   position: fixed; width: 300px; height: 300px; border-radius: 9999px;
   background: radial-gradient(closest-side, rgba(251,191,36,.12), rgba(59,130,246,.06), transparent 70%);
@@ -37,7 +37,7 @@ body { font-family: 'Space Grotesk', sans-serif }
   transform-origin: 0 50%; transform: scaleX(0);
 }
 
-/* Ambient glow orbs */
+/* Orbs */
 .orb { position:absolute; border-radius:9999px; filter: blur(90px); opacity:.12; mix-blend:screen; pointer-events:none; z-index: 0; }
 .orb.a { background: linear-gradient(135deg,#22d3ee,#6366f1); animation: floatA 22s ease-in-out infinite; }
 .orb.b { background: linear-gradient(135deg,#f59e0b,#ef4444); animation: floatB 26s ease-in-out infinite; }
@@ -46,7 +46,7 @@ body { font-family: 'Space Grotesk', sans-serif }
 @keyframes floatB { 0%,100%{transform:translate(8%,-6%)} 50%{transform:translate(-4%,6%)} }
 @keyframes floatC { 0%,100%{transform:translate(0,8%)} 50%{transform:translate(4%,-8%)} }
 
-/* Neon outline */
+/* Neon */
 .neon { position: relative; z-index: 3; }
 .neon:before {
   content: ""; position: absolute; inset: -1px; border-radius: 1.5rem; padding: 1px;
@@ -54,10 +54,6 @@ body { font-family: 'Space Grotesk', sans-serif }
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
 }
-
-/* Tilt */
-.tilt { transform-style: preserve-3d; transition: transform .35s ease; }
-.tilt:hover { transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) scale(1.01); }
 
 /* Drag handle */
 .drag-handle {
@@ -71,20 +67,15 @@ body { font-family: 'Space Grotesk', sans-serif }
   box-shadow: 0 0 0 6px rgba(250,204,21,.06), 0 10px 30px rgba(0,0,0,.6); z-index: 41;
 }
 
-/* Scroll reveal */
-.reveal { opacity: 0; transform: translateY(18px) scale(.98); transition: opacity .6s ease, transform .6s ease; }
-.reveal.in { opacity: 1; transform: translateY(0) scale(1); }
-
 /* Scrollbars */
 ::-webkit-scrollbar { height:10px; width:10px }
 ::-webkit-scrollbar-thumb { background:#27272a; border-radius:9999px }
 
-/* Layering for main content */
+/* Layering */
 header, #splitWrap, footer { position: relative; z-index: 3; }
 
-/* Respect reduced motion */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .tilt:hover { transform: none; }
   .orb { animation: none; }
-  #cursor-glow, #fx-trail { display: none; }
+  #cursor-glow { display: none; }
 }
