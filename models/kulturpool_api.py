@@ -95,8 +95,13 @@ def kulturpool_main(description, openrouter_data, title):
     print(descrip)
     if description != '':
         result_descrip = kulturpool_search(descrip)
+
         keywords_all = extract_keywords(openrouter_data)
-        result_keyall = kulturpool_search(keywords_all)
+
+        print('keywords_all')
+        print(keywords_all)
+        if keywords_all != '':
+            result_keyall = kulturpool_search(keywords_all)
     # get keywords and try with all keywords
 
     # query with title
