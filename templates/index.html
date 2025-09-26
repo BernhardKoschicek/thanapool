@@ -1,25 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;700&display=swap');
-        h1, h2 { font-family: 'Anton', sans-serif; letter-spacing: -1px; }
-        body { font-family: 'Space Grotesk', sans-serif; }
-    </style>
+  <title>ThanaPool</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white min-h-screen p-8">
+<header class="neon-header p-6 md:p-8">
+  <div
+    class="neon rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 to-black/90 p-6 md:p-8 backdrop-blur">
+    <div
+      class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
 
-    <ul>
-      <li><a href="{{ url_for('openrouter_view', id_=119224) }}">Wimm Hügelgräber</a></li>
-      <li><a href="{{ url_for('openrouter_view', id_=196144) }}">Josef Szombathy</a></li>
-      <li><a href="{{ url_for('openrouter_view', id_=36234) }}">Karnburg Weihnachten 888</a></li>
-      <li><a href="{{ url_for('openrouter_view', id_=196330) }}">Ferdinand von Hochstetter</a></li>
-      <li><a href="{{ url_for('openrouter_view', id_=47049) }}">Katzelsdorf</a></li>
-    </ul>
+      <h1>ThanaPool</h1>
+    </div>
+  </div>
+</header>
+<main>
+  <div
+    class="neon rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 to-black/90 p-6 md:p-8 backdrop-blur">
+    <div
+      class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      <ul>
+        <li><a href="{{ url_for('entity_view', id_=119224) }}">Wimm
+          Hügelgräber</a></li>
+        <li><a href="{{ url_for('entity_view', id_=196144) }}">Josef
+          Szombathy</a></li>
+        <li><a href="{{ url_for('entity_view', id_=36234) }}">Karnburg
+          Weihnachten 888</a></li>
+        <li><a href="{{ url_for('entity_view', id_=196330) }}">Ferdinand von
+          Hochstetter</a></li>
+        <li><a href="{{ url_for('entity_view', id_=47049) }}">Katzelsdorf</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</main>
 
 
 </body>
