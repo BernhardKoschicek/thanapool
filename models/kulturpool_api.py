@@ -37,6 +37,20 @@ def description_text(description):
     :param description: description from object in Thanados
     :return description: returns the cleaned or if no action necessary, the original description
     """
+
+
+
+    # 1. Replace newlines/tabs with spaces
+    description = re.sub(r'[\r\n\t]+', ' ', description)
+
+    # 2. Remove any characters that are not letters, numbers, punctuation, or spaces
+    description = re.sub(r"[^a-zA-Z0-9äöüÄÖÜß.,;:!?'\-\(\)\[\] ]+", "", description)
+
+    # 3. Collapse multiple spaces into one
+    description = re.sub(r'\s+', ' ', description).strip()
+
+
+
     match = re.search(r"##de_##(.*?)##_de##", description, re.DOTALL | re.IGNORECASE)
     if match:
         return match.group(1).strip()
