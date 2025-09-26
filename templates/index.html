@@ -1,63 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
+<<!DOCTYPE html>
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ThanaPool</title>
+<meta name="description" content="ThanaPool – Kuratierte Links zu archäologischen Objekten, Personen und Orten." />
+<meta name="theme-color" content="#000000" />
 
-  <title>ThanaPool</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Tailwind via CDN (für schnelles Prototyping) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+
+<!-- Eigene Styles (optional) -->
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+
+<style>
+/* Kleine Neon-/Glas-Effekt-Verbesserung, unabhängig von Tailwind */
+.neon {
+box-shadow:
+0 0 1px rgba(255,255,255,0.2),
+0 0 20px rgba(99,102,241,0.1),
+inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.glass {
+background: linear-gradient(135deg, rgba(39,39,42,0.9), rgba(0,0,0,0.85));
+backdrop-filter: blur(8px);
+-webkit-backdrop-filter: blur(8px);
+}
+</style>
 </head>
-<body class="bg-black text-white min-h-screen overflow-x-hidden">
-<header class="p-6 md:p-8">
-  <div
-    class="neon rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 to-black/90 p-6 md:p-8 backdrop-blur">
-    <div
-      class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-      <h1 class="text-4xl md:text-6xl mt-3 font-bold leading-tight">
-        ThanaPool</h1>
-
-    </div>
-  </div>
+<body class="bg-black text-white min-h-screen overflow-x-hidden antialiased">
+<!-- Header -->
+    <header class="p-6 md:p-10">
+        <div class="neon rounded-3xl border border-zinc-800 glass p-6 md:p-10 max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                <div>
+                    <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">ThanaPool</h1>
+                    <p class="mt-3 text-zinc-300 max-w-prose">
+                        <a href="https://thanados.net" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">THANADOS</a> x
+                        <a href="https://kulturpool.at/" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Kulturpool</a>
+                         - Ergebnis des "Hack the Pool" Hackathons.
+                    </p>
+                </div>
+<!-- Optionaler Platz für Logo oder Badge -->
+<!-- <img src="{{ url_for('static', filename='logo.svg') }}" alt="ThanaPool" class="h-12 md:h-16 opacity-90"/> -->
+            </div>
+            </div>
 </header>
-<main>
-  <div class="px-6 md:px-8">
-    <div
-      class="neon rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900/90 to-black/90 p-6 md:p-8 backdrop-blur">
-      <div
-        class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-        <ul>
-          <li>
-            <a href="{{ url_for('entity_view', id_=119224) }}">
-              Wimm Hügelgräber
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('entity_view', id_=196144) }}">
-              Josef Szombathy
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('entity_view', id_=36234) }}">
-              Karnburg Weihnachten 888
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('entity_view', id_=196330) }}">
-              Ferdinand von Hochstetter
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('entity_view', id_=47049) }}">
-              Katzelsdorf
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
+
+
+<!-- Main -->
+<<main class="px-6 md:px-10 pb-16">
+  <!-- Rahmen-Box -->
+  <div class="neon rounded-3xl border border-zinc-800 glass p-6 md:p-10 max-w-6xl mx-auto">
+    <div class="flex flex-col gap-6">
+      <h2 class="text-2xl md:text-3xl font-semibold">Kuratierte Links</h2>
+
+
+<!-- Liste / Grid der Links -->
+            <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <li>
+                    <a href="{{ url_for('entity_view', id_=119224) }}" class="block group rounded-2xl border border-zinc-800/80 hover:border-indigo-400/60 p-4 transition">
+                        <div class="flex items-start justify-between">
+                            <h3 class="font-medium">Wimm Hügelgräber</h3>
+                            <span class="text-sm px-3 py-1 rounded-full bg-zinc-800/80">Ort</span>
+                        </div>
+                        <p class="mt-3 text-base text-zinc-300 group-hover:text-zinc-100">Fundstelle / Grabhügel in Wimm.</p>
+                    </a>
+                </li>
+                 <li>
+                    <a href="{{ url_for('entity_view', id_=196144) }}" class="block group rounded-2xl border border-zinc-800/80 hover:border-indigo-400/60 p-4 transition">
+                        <div class="flex items-start justify-between">
+                            <h3 class="font-medium">Josef Szombathy</h3>
+                            <span class="text-sm px-3 py-1 rounded-full bg-zinc-800/80">Person</span>
+                        </div>
+                        <p class="mt-3 text-base text-zinc-300 group-hover:text-zinc-100">Prähistoriker; Bezug zu Funden und Ausgrabungen.</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('entity_view', id_=36234) }}" class="block group rounded-2xl border border-zinc-800/80 hover:border-indigo-400/60 p-4 transition">
+                        <div class="flex items-start justify-between">
+                            <h3 class="font-medium">Karnburg Weihnachten 888</h3>
+                            <span class="text-sm px-3 py-1 rounded-full bg-zinc-800/80">Ereignis</span>
+                        </div>
+                        <p class="mt-3 text-base text-zinc-300 group-hover:text-zinc-100">Historisches Ereignis in Karnburg (Kärnten).</p>
+                    </a>
+                </li>
+                 <li>
+                    <a href="{{ url_for('entity_view', id_=196330) }}" class="block group rounded-2xl border border-zinc-800/80 hover:border-indigo-400/60 p-4 transition">
+                        <div class="flex items-start justify-between">
+                            <h3 class="font-medium">Ferdinand von Hochstetter</h3>
+                            <span class="text-sm px-3 py-1 rounded-full bg-zinc-800/80">Person</span>
+                        </div>
+                        <p class="mt-3 text-base text-zinc-300 group-hover:text-zinc-100">Geologe; Beiträge zur Erforschung.</p>
+                    </a>
+                </li>
+                 <li>
+                    <a href="{{ url_for('entity_view', id_=47049) }}" class="block group rounded-2xl border border-zinc-800/80 hover:border-indigo-400/60 p-4 transition">
+                        <div class="flex items-start justify-between">
+                            <h3 class="font-medium">Katzelsdorf</h3>
+                            <span class="text-sm px-3 py-1 rounded-full bg-zinc-800/80">Ort</span>
+                        </div>
+                        <p class="mt-3 text-base text-zinc-300 group-hover:text-zinc-100">Gemeinde / Fundkontext.</p>
+                    </a>
+                </li>
+            </ul>
 </main>
 
+<!-- Logos (außerhalb des Rahmens) -->
+<div class="w-full bg-black mt-12 px-6 md:px-10 pb-12">
+  <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-10">
+    <a href="https://thanados.net" target="_blank" rel="noopener noreferrer">
+    <img src="{{ url_for('static', filename='images/thanados.png') }}"
+     alt="thanados logo"
+     class="h-10 object-contain" />
+    </a>
+    <a href="https://www.kulturpool.at" target="_blank" rel="noopener noreferrer">
+      <img src="{{ url_for('static', filename='images/kulturpool.png') }}"
+     alt="Kulturpool Logo"
+     class="h-10 object-contain" />
+    </a>
+    <a href="https://www.acdh.oeaw.ac.at" target="_blank" rel="noopener noreferrer">
+      <img src="{{ url_for('static', filename='images/acdh.png') }}"
+     alt="ACDH Logo"
+     class="h-10 object-contain" />
+    </a>
+    <a href="www.nhm.at" target="_blank" rel="noopener noreferrer">
+      <img src="{{ url_for('static', filename='images/nhm.jpg') }}"
+     alt="NHM Logo"
+     class="h-10 object-contain" />
+    </a>
+    <a href="https://www.univie.ac.at/" target="_blank" rel="noopener noreferrer">
+      <img src="{{ url_for('static', filename='images/uni_vienna.png') }}"
+     alt="Uni Wien Logo"
+     class="h-10 object-contain" />
+    </a>
+  </div>
+</div>
 
-</body>
-</html>
+ <!-- Footer jetzt außerhalb der Box -->
+ <footer class="mt-10 px-6 md:px-10">
+    <div class="max-w-6xl mx-auto text-sm text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>ThanaPool</p>
+      <nav class="flex gap-4">
+        <a href="#" class="hover:text-zinc-200">Kontakt: Bernhard, Elias, Jona, Melissa, Nina und Stefan</a>
+      </nav>
+    </div>
+ </footer>
