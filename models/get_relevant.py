@@ -7,6 +7,11 @@ url = 'https://api.kulturpool.at/search'
 
 
 def find_number_of_results(name):
+    """
+    takes query and checks how many search results exist in Kulturpool
+    :param name: str, query string
+    :return: int, number of search results"""
+
     params = {
         'q': name,
     }
@@ -16,6 +21,12 @@ def find_number_of_results(name):
 
 
 def get_data_of_page(name, page):
+    """
+    Gets results from page "page" of the Kulturpool
+    :param name: str, query string
+    :param page: int, page number
+    :return: return json file as detailed in the documentation of the Kulturpool API.
+    """
     params = {
         'q': name,
         'page': page
@@ -24,13 +35,20 @@ def get_data_of_page(name, page):
     return response.json()
 
 
-def get_all_info(name):
+def get_all_info(name, n=50):
+    """
+    Collects the n first results from Kulturpool.
+    :param name: str, query string
+    :param n: int, number of results wanted
+    :return: two dictionnaries. text_dict has the form {'id': 'text'},
+            info_dict the form {'id': ['title', 'previewImage', 'isShownAt']}
+    """
     number_of_results = find_number_of_results(name)
     print(f'Number of results found: {number_of_results}')
 
     text_dict = dict()
     info_dict = dict()
-    for i in range(1, min(number_of_results, 50) // 20 + 2):
+    for i in range(1, min(number_of_results, n) // 20 + 2):
         data = get_data_of_page(name, i)
         for hit in data['hits']:
             doc = hit['document']
@@ -46,6 +64,12 @@ def get_all_info(name):
 
 
 def get_prompt(input_text, data):
+    """
+    returns prompt.
+    :param input_text: str, text for which similar matches should be found
+    :param data: dictionary of the form {'id', 'text'}
+    :return: str, prompt to be given to the API.
+    """
     prompt = f"""
     **Instructions:**
     You are given an input text describing a certain entity (e.g. a person, an event, a place): {input_text}
@@ -68,6 +92,12 @@ def get_prompt(input_text, data):
     return prompt
 
 def api_call(text, data):
+    """
+    performs API call.
+    :param text: str, text for which similar matches should be found
+    :param data: dictionary of the form {'id', 'text'}
+    :return: list of "most relevant ids". list of str, each string is an id
+    """
     load_dotenv()
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
     print(f"API Key loaded: {OPENROUTER_API_KEY is not None}")
@@ -98,14 +128,25 @@ def api_call(text, data):
     return return_list
 
 def get_relevant(name, description):
+    """
+    fuction that combines all the other functions. For a name it queries data from Kulturpool,
+    then it builds a prompt, combining the description with the data from Kulturpool.
+    Finally, it returns up to 9 "most relevant" samples from Kulturpool.
+    :param name: str, query string
+    :param description: str, description of the entity
+    :return: list of dictionaries of the form:
+            [{'id':value, 'title': value, 'previewImage': value, 'isShownAt': value}, {}, ...]
+    """
+    print("let's get the most relevant media objects!")
     data, info = get_all_info(name)
     relevant_examples = api_call(description, data)
     res_list = []
     for k in relevant_examples:
-        d = {}
-        d['id'] = k
-        d['title'] = info[k][0]
-        d['previewImage'] = info[k][1]
-        d['isShownAt'] = info[k][2]
-        res_list.append(d)
+        if k in info.keys():
+            d = {}
+            d['id'] = k
+            d['title'] = info[k][0]
+            d['previewImage'] = info[k][1]
+            d['isShownAt'] = info[k][2]
+            res_list.append(d)
     return res_list
