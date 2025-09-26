@@ -64,8 +64,13 @@ def entity_view(id_: int):
     openrouter = openrouter_call(description)
     kp_descrip_result, kp_keyall_result, kp_title_result, kp_person, kp_place = kulturpool_main(description, openrouter, name)
 
+    relv_ids = {item["id"] for item in relv}  # make a set for fast lookup
+
     all_others = kp_descrip_result + kp_keyall_result + kp_title_result
     unique_by_id = list({item["id"]: item for item in all_others}.values())
+
+    # Filter out items whose id is already in relv
+    unique_by_id = [item for item in unique_by_id if item["id"] not in relv_ids]
 
     return render_template("entity_view.html", data=data, relv=relv, titledata=unique_by_id, rel_persons=kp_person, rel_places= kp_place)
 
