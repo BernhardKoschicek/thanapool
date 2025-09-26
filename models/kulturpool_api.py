@@ -88,10 +88,17 @@ def kulturpool_main(description, openrouter_data, title):
     returns the result dictionary from the queries. """
     # get description and try query with description
     descrip = description_text(description)
-    result_descrip = kulturpool_search(descrip)
+
+    result_keyall = []
+    result_descrip = []
+    print('descrip')
+    print(descrip)
+    if description != '':
+        result_descrip = kulturpool_search(descrip)
+        keywords_all = extract_keywords(openrouter_data)
+        result_keyall = kulturpool_search(keywords_all)
     # get keywords and try with all keywords
-    keywords_all = extract_keywords(openrouter_data)
-    result_keyall = kulturpool_search(keywords_all)
+
     # query with title
     result_title = kulturpool_search(title)
     # specific for each category

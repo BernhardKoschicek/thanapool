@@ -69,6 +69,7 @@ def call_prompt(text):
         })
     )
     output = response.json()['choices'][0]['message']['content']
+    print(output)
     return output
 
 def openrouter_call(text):
