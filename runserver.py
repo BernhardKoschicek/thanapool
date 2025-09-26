@@ -60,23 +60,11 @@ def entity_view(id_: int):
     }
 
 
-
-
-
-
-    try:
-        kp_response = requests.get(base_url, params=params, timeout=10)
-        kp_response.raise_for_status()
-        kp_data = kp_response.json()
-    except requests.RequestException as e:
-        print(f"Fehler bei API-Request: {e}")
-        kp_data = {"found": 0, "hits": []}
-
     relv = get_relevant(name, description)
     openrouter = openrouter_call(description)
     kp_descrip_result, kp_keyall_result, kp_title_result, kp_keyspec_result = kulturpool_main(description, openrouter, name)
 
-    return render_template("entity_view.html", data=data, kp_data=kp_data, relv=relv, titledata=kp_title_result)
+    return render_template("entity_view.html", data=data, relv=relv, titledata=kp_title_result)
 
 @app.route("/openrouter/<id_>")
 def openrouter_view(id_: int):
