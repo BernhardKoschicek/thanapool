@@ -87,4 +87,4 @@ def openrouter_call(text):
         print('LLM was not able to generate the keyword-dictionary. See LLM-output below:')
         print(output)
 
-    return output
+    return result
