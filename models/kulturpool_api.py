@@ -1,3 +1,8 @@
+"""
+This script queries the database Kulturpool through API.
+The queries are based on the output from openrouter.py.
+The output will be dictionaries of the structure
+"""
 import requests
 import re
 
@@ -6,6 +11,7 @@ url = "https://api.kulturpool.at/search"
 
 def kulturpool_search(name):
     """
+    Para
     function that calls kulturpool api and queries the database for param: item
     returns result as dict
     """
@@ -89,6 +95,6 @@ def kulturpool_main(description, openrouter_data, title):
     # query with title
     result_title = kulturpool_search(title)
     # specific for each category
-    result_keyspec = kulturpool_search_extended(openrouter_data)
-    return result_descrip, result_keyall, result_title, result_keyspec
+    #result_keyspec = kulturpool_search_extended(openrouter_data)
+    return result_descrip, result_keyall, result_title #result_keyspec
 
