@@ -90,7 +90,12 @@ def api_call(text, data):
     )
     result = response.json()['choices'][0]['message']['content']
     keys_list = re.findall(r'"([0-9a-f]{24})"', result)
-    return set(keys_list)
+
+    keys_list = list(set(keys_list))
+    return_list = []
+    for i in range(min(len(keys_list),9)):
+        return_list.append(keys_list[i])
+    return return_list
 
 def get_relevant(name, description):
     data, info = get_all_info(name)
