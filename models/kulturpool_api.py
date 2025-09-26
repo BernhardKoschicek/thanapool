@@ -123,5 +123,5 @@ def kulturpool_main(description, openrouter_data, title):
     result_title = kulturpool_search(title)
     # for specified categories (person and place)
     person_result, place_result = kulturpool_search_extended(openrouter_data)
-    return result_descrip, result_keyall, result_title, person_result, place_result
+    return result_title, result_descrip, result_keyall, person_result, place_result
 

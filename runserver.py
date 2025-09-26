@@ -67,7 +67,7 @@ def entity_view(id_: int):
     all_others = kp_descrip_result + kp_keyall_result + kp_title_result
     unique_by_id = list({item["id"]: item for item in all_others}.values())
 
-    return render_template("entity_view.html", data=data, relv=relv, titledata=unique_by_id)
+    return render_template("entity_view.html", data=data, relv=relv, titledata=unique_by_id, rel_persons=kp_person, rel_places= kp_place)
 
 @app.route("/openrouter/<id_>")
 def openrouter_view(id_: int):
