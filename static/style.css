@@ -106,3 +106,7 @@ header, #splitWrap, footer { position: relative; z-index: 3; }
 @media (prefers-reduced-motion: reduce){
   .stream-in{ animation: none !important; filter: none !important; opacity: 1; transform: none; }
 }
+#relv-count, #others-count {
+  font-size: .9rem;         /* tweak size */
+  font-weight: 600;         /* optional */
+}
