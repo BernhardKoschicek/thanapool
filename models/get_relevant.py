@@ -30,7 +30,7 @@ def get_all_info(name):
 
     text_dict = dict()
     info_dict = dict()
-    for i in range(1, number_of_results // 20 + 2):
+    for i in range(1, min(number_of_results, 50) // 20 + 2):
         data = get_data_of_page(name, i)
         for hit in data['hits']:
             doc = hit['document']

@@ -35,29 +35,19 @@ def get_prompt(text):
 
     return prompt
 
-def check_if_dict(output):
-    valid = False
-    limit = 5
-    counter = 0
-    while not valid and counter != limit:
-        print(counter)
-        counter += 1
-        try:
-            data = ast.literal_eval(output)
-            if isinstance(data, dict):
-                print("Success: valid dictionary")
-                result = data
-                valid = True
-            else:
-                print("Parsed object is not a dictionary")
-                result = None
-        except Exception as e:
-            print("Failed to parse:", e)
-            print(output)
-            result = None
-    return result
+def check_if_dict(output, valid):
+    try:
+        data = ast.literal_eval(output)
+        if isinstance(data, dict):
+            result = data
+            valid = True
+        else:
+            result = output
+    except Exception as e:
+        result = output
+    return result, valid
 
-def openrouter_call(text):
+def call_prompt(text):
     load_dotenv()
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
     print(f"API Key loaded: {OPENROUTER_API_KEY is not None}")
@@ -79,4 +69,22 @@ def openrouter_call(text):
         })
     )
     output = response.json()['choices'][0]['message']['content']
-    return check_if_dict(output)
+    return output
+
+def openrouter_call(text):
+    output = call_prompt(text)
+    valid = False
+
+    limit = 5
+    counter = 0
+    while not valid and counter != limit:
+        counter += 1
+        result, valid = check_if_dict(output, valid)
+        if not valid:
+            output = call_prompt(text)
+
+    if not valid:
+        print('LLM was not able to generate the keyword-dictionary. See LLM-output below:')
+        print(output)
+
+    return output
