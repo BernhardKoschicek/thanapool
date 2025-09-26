@@ -74,7 +74,7 @@ def kulturpool_search_extended(openrouter_data, categories = None):
         if category in openrouter_data:
             all_results[category] = {}
             for keyword in openrouter_data[category]:
-                all_results[category][keyword] = kulturpool_search(keyword)
+                all_results[category][keyword] = kulturpool_search(keyword, 5)
 
     pers_results = all_results.get("person_names", {})
     plac_results = all_results.get("place_names", {})
