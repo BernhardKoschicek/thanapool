@@ -62,7 +62,7 @@ def entity_view(id_: int):
 
     relv = get_relevant(name, description)
     openrouter = openrouter_call(description)
-    kp_descrip_result, kp_keyall_result, kp_title_result, kp_keyspec_result = kulturpool_main(description, openrouter, name)
+    kp_descrip_result, kp_keyall_result, kp_title_result = kulturpool_main(description, openrouter, name)
 
     return render_template("entity_view.html", data=data, relv=relv, titledata=kp_title_result)
 
