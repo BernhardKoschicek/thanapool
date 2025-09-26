@@ -109,7 +109,7 @@ def api_call(text, data):
             "Authorization": f"Bearer {OPENROUTER_API_KEY}"
         },
         data=json.dumps({
-            "model": "openai/gpt-4o",
+            "model": "openai/gpt-4o", #deepseek/deepseek-chat-v3.1:free
             "messages": [
                 {
                     "role": "user",
