@@ -71,7 +71,10 @@ def entity_view(id_: int):
 
     # Filter out items whose id is already in relv
     unique_by_id = [item for item in unique_by_id if item["id"] not in relv_ids]
-
+    kp_person = [item for sublist in kp_person.values() for item in sublist]
+    kp_person = list({item["id"]: item for item in kp_person}.values())
+    kp_place = [item for sublist in kp_place.values() for item in sublist]
+    kp_place = list({item["id"]: item for item in kp_place}.values())
     return render_template("entity_view.html", data=data, relv=relv, titledata=unique_by_id, rel_persons=kp_person, rel_places= kp_place)
 
 @app.route("/openrouter/<id_>")
