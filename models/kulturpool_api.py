@@ -19,7 +19,7 @@ def kulturpool_search(name):
     print(f'Number of results found: {number_of_results}')
 
     info_dict = dict()
-    for i in range(1, number_of_results // 20 + 2):
+    for i in range(1, min(number_of_results, 100) // 20 + 2):
         data = get_data_of_page(name, i)
         for hit in data['hits']:
             doc = hit['document']
@@ -96,5 +96,6 @@ def kulturpool_main(description, openrouter_data, title):
     result_title = kulturpool_search(title)
     # specific for each category
     #result_keyspec = kulturpool_search_extended(openrouter_data)
-    return result_descrip, result_keyall, result_title #result_keyspec
+    return result_descrip, result_keyall, result_title
+    #result_keyspec
 
