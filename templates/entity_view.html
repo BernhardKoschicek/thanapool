@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{{ data.title }}</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="manifest" href="/static/site.webmanifest">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         const data = {{ data|tojson }};
@@ -45,6 +49,10 @@
                     Swap sides
                 </button>
             </div>
+          <img src="{{ url_for('static', filename='images/logo.png') }}"
+     alt="ThanaPool"
+     class="max-h-24 w-auto md:max-h-32 object-contain" />
+
         </div>
     </div>
 </header>
