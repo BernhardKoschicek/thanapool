@@ -6,7 +6,10 @@
 <title>ThanaPool</title>
 <meta name="description" content="ThanaPool – Kuratierte Links zu archäologischen Objekten, Personen und Orten." />
 <meta name="theme-color" content="#000000" />
-
+<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+<link rel="manifest" href="/static/site.webmanifest">
 
 <!-- Tailwind via CDN (für schnelles Prototyping) -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -49,7 +52,10 @@ backdrop-filter: blur(8px);
                     </p>
                 </div>
 <!-- Optionaler Platz für Logo oder Badge -->
-<!-- <img src="{{ url_for('static', filename='logo.svg') }}" alt="ThanaPool" class="h-12 md:h-16 opacity-90"/> -->
+<img src="{{ url_for('static', filename='images/logo.png') }}"
+     alt="ThanaPool"
+     class="max-h-24 w-auto md:max-h-32 object-contain" />
+
             </div>
             </div>
 </header>
