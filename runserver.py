@@ -45,7 +45,7 @@ def entity_view(id_: int):
     description = ''
     if data['description']:
         description = extract_localized_text(data['description'])
-
+        data['description'] = description
 
     name = data['title']
     main_type = ''
