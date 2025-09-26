@@ -36,7 +36,7 @@ def extract_localized_text(text, preferred_lang="de"):
     return text.strip()
 
 
-@app.route("/<id_>")
+@app.route("/<int:id_>")
 def entity_view(id_: int):
     print(id_)
 
