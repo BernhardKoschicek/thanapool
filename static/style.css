@@ -1,26 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;700&display=swap');
+
+h1, h2, h3, h4 {
+    font-family: 'Anton', sans-serif;
+    letter-spacing: -.5px
+}
+
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f0f0f0;
-    margin: 0;
-    padding: 50px;
+    font-family: 'Space Grotesk', sans-serif
 }
 
-h1 {
-    color: #333;
+/* Ambient glow orbs */
+.orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: .12;
+    mix-blend: screen;
+    pointer-events: none
 }
 
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: #007BFF;
-    color: white;
-    transition: background 0.3s;
+.orb.a {
+    background: linear-gradient(135deg, #22d3ee, #6366f1);
+    animation: floatA 22s ease-in-out infinite
 }
 
-button:hover {
-    background: #0056b3;
+.orb.b {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    animation: floatB 26s ease-in-out infinite
+}
+
+.orb.c {
+    background: linear-gradient(135deg, #10b981, #22d3ee);
+    animation: floatC 30s ease-in-out infinite
+}
+
+@keyframes floatA {
+    0%, 100% {
+        transform: translate(-6%, 0)
+    }
+    50% {
+        transform: translate(8%, 6%)
+    }
+}
+
+@keyframes floatB {
+    0%, 100% {
+        transform: translate(8%, -6%)
+    }
+    50% {
+        transform: translate(-4%, 6%)
+    }
+}
+
+@keyframes floatC {
+    0%, 100% {
+        transform: translate(0, 8%)
+    }
+    50% {
+        transform: translate(4%, -8%)
+    }
+}
+
+/* Neon outline */
+.neon {
+    position: relative
+}
+
+.neon:before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 1.5rem;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(56, 189, 248, .6), rgba(59, 130, 246, .25) 30%, rgba(244, 114, 182, .25) 60%, rgba(251, 191, 36, .6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none
+}
+
+/* Tilt */
+.tilt {
+    transform-style: preserve-3d;
+    transition: transform .35s ease
+}
+
+.tilt:hover {
+    transform: perspective(1000px) rotateX(2deg) rotateY(-2deg)
+}
+
+/* Drag handle */
+.drag-handle {
+    --s: 56px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--x, 50%);
+    width: var(--s);
+    margin-left: calc(var(--s) / -2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: ew-resize;
+    z-index: 30
+}
+
+.drag-handle:after {
+    content: "";
+    height: 100%;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, rgba(250, 204, 21, .6), transparent)
+}
+
+.drag-dot {
+    position: absolute;
+    height: 44px;
+    width: 44px;
+    border-radius: 9999px;
+    background: rgba(250, 204, 21, .1);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(250, 204, 21, .35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 6px rgba(250, 204, 21, .06), 0 10px 30px rgba(0, 0, 0, .6)
+}
+
+::-webkit-scrollbar {
+    height: 10px;
+    width: 10px
+}
+
+::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 9999px
 }
